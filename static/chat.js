@@ -4,8 +4,12 @@
  * 修复：会话 ID 丢失导致创建新会话的问题
  */
 
-const WS_URL = 'ws://localhost:8000/ws/stream';
-const API_URL = 'http://localhost:8000/api';
+// 自动获取当前服务器的 API 和 WebSocket 地址
+const getApiBase = () => `${window.location.protocol}//${window.location.host}/api`;
+const getWsBase = () => `ws://${window.location.host}/ws/stream`;
+
+const WS_URL = getWsBase();
+const API_URL = getApiBase();
 
 // ============ 0. 全局变量定义 ============
 let ws = null;

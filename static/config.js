@@ -4,7 +4,17 @@
  * 适配扁平化配置结构 (无嵌套组)
  */
 
-const API_BASE = 'http://localhost:8000/api';
+// 自动获取当前服务器的 API 地址
+const getApiBase = () => {
+    const protocol = window.location.protocol;
+    const host = window.location.host;
+    return `${protocol}//${host}/api`;
+};
+
+const API_BASE = getApiBase();
+
+// 暴露给全局，其他 JS 模块可以使用
+window.getApiBase = getApiBase;
 
 // DOM ID 到 配置文件 Key 的映射
 // 格式: { HTML元素ID : 后端配置Key }

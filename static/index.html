@@ -1385,6 +1385,10 @@
                     <span class="nav-icon">👤</span>
                     <span>用户画像</span>
                 </div>
+                <div class="nav-item" data-page="skills">
+                    <span class="nav-icon">🛠️</span>
+                    <span>Skill 管理</span>
+                </div>
                 
                 <div class="nav-section-title">设置</div>
                 <div class="nav-item" data-page="config">
@@ -1699,7 +1703,8 @@
 /**
  * 用户画像模块
  */
-const PERSON_API_BASE = 'http://localhost:8000/api';
+// 自动获取当前服务器的 API 地址 (复用 config.js 中的函数)
+const PERSON_API_BASE = window.getApiBase ? window.getApiBase() : `${window.location.protocol}//${window.location.host}/api`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('analyzePersonLikeBtn');
@@ -1887,6 +1892,7 @@ function renderBeautifulGraph(graphData) {
             'chat': '💬',
             'knowledge': '📚',
             'personlike': '👤',
+            'skills': '🛠️',
             'config': '⚙️'
         };
 
@@ -1894,15 +1900,23 @@ function renderBeautifulGraph(graphData) {
             'chat': '智能对话',
             'knowledge': '知识库管理',
             'personlike': '用户画像',
+            'skills': 'Skill 管理',
             'config': '模型配置'
         };
 
         document.querySelectorAll('.nav-item').forEach(item => {
             item.addEventListener('click', () => {
                 const page = item.getAttribute('data-page');
+                console.log('点击了导航:', page);
                 
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
+                
+                if (page === 'skills') {
+                    // 跳转到 skills.html
+                    window.location.href = 'skills.html';
+                    return;
+                }
                 
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 document.getElementById(page + 'Page').classList.add('active');
