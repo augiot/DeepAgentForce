@@ -70,7 +70,7 @@ tags:
 ```bash
 python src/services/skills/my-awesome-skill/scripts/main.py --param value
 ```
-```
+
 
 #### 🚀 前端可视化管理
 
