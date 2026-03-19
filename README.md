@@ -71,15 +71,6 @@ tags:
 python src/services/skills/my-awesome-skill/scripts/main.py --param value
 ```
 
-
-#### 🚀 前端可视化管理
-
-<div align="center">
-  <img src="images/skill_add_des.png" alt="新增 Skill 界面" width="90%">
-  <br>
-  <em>通过前端界面上传和管理 Skill</em>
-</div>
-
 **完整的管理功能：**
 - 📦 查看所有已安装 Skills
 - ➕ 上传自定义 Skill (SKILL.md + Python 脚本)
@@ -232,7 +223,7 @@ python -m http.server 8080
 开始与 AI 助手交互：
 
 ```
-你: "分析这份财报的主要风险点"
+你: "对比一下本公司上市时间和百度上市时间，生成报告"
 AI: [自动调用 RAG 检索相关文档] + [深度分析] + [生成报告]
 ```
 
@@ -248,15 +239,7 @@ AI: [自动调用 RAG 检索相关文档] + [深度分析] + [生成报告]
 
 这是 DeepAgentForce 最强大的特性！
 
-#### 查看 Skills
 
-访问 **"Skill 管理"** 页面，查看所有已安装的 Skills：
-
-<div align="center">
-  <img src="images/skills_manage.png" alt="Skill 列表" width="90%">
-  <br>
-  <em>一目了然的 Skill 列表</em>
-</div>
 
 #### 上传新 Skill
 
@@ -268,7 +251,7 @@ AI: [自动调用 RAG 检索相关文档] + [深度分析] + [生成报告]
 6. 点击 **"💾 安装 Skill"** 完成上传
 
 <div align="center">
-  <img src="images/skill_add_des.png" alt="新增 Skill" width="90%">
+  <img src="images/skill_add_des.png" alt="新增 Skill" width="70%">
   <br>
   <em>可视化上传，无需代码</em>
 </div>
