@@ -4,28 +4,60 @@
  * 适配扁平化配置结构 (无嵌套组)
  */
 
-// 自动获取当前服务器的 API 地址
-// 支持 ?api= 参数指定后端地址 (用于前后端分离部署)
-// 默认连接 8000 端口 (后端)
+// 动态获取后端地址
+// 策略：1. 先尝试从 ?api= 参数获取
+//       2. 如果没有参数，页面加载时自动从当前域名请求 server_info 接口获取
+//       3. 如果 server_info 失败，则使用当前域名作为 API 地址
+
+let _serverInfo = null;
+
+// 页面加载时自动获取服务器信息
+async function initServerInfo() {
+    try {
+        const currentBase = `${window.location.protocol}//${window.location.host}`;
+        const response = await fetch(`${currentBase}/api/server_info`, {
+            signal: AbortSignal.timeout(3000)
+        });
+        if (response.ok) {
+            _serverInfo = await response.json();
+            console.log('✅ 获取到服务器信息:', _serverInfo);
+        }
+    } catch (e) {
+        console.warn('⚠️ 无法获取 server_info，使用默认配置:', e.message);
+    }
+}
+
+// 同步版本 - 优先使用 URL 参数，否则使用已获取的 server_info
 const getApiBase = () => {
+    // 优先使用 URL 参数
     const urlParams = new URLSearchParams(window.location.search);
     const apiParam = urlParams.get('api');
     if (apiParam) return apiParam;
-    // 默认连接后端 8000 端口
+    
+    // 使用 server_info
+    if (_serverInfo && _serverInfo.api_base) return _serverInfo.api_base;
+    
+    // 回退：假设后端在当前服务器的 8000 端口
     return `${window.location.protocol}//${window.location.hostname}:8000/api`;
 };
 
 const getWsBase = () => {
+    // 优先使用 URL 参数
     const urlParams = new URLSearchParams(window.location.search);
     const apiParam = urlParams.get('api');
     if (apiParam) return apiParam.replace('/api', '') + '/ws/stream';
-    // 默认连接后端 8000 端口
+    
+    // 使用 server_info
+    if (_serverInfo && _serverInfo.ws_base) return _serverInfo.ws_base;
+    
+    // 回退：假设后端在当前服务器的 8000 端口
     return `ws://${window.location.hostname}:8000/ws/stream`;
 };
 
-const API_BASE = getApiBase();
+// 页面加载时自动获取 server_info
+initServerInfo();
 
-// 暴露给全局，其他 JS 模块可以使用
+// 暴露给全局
 window.getApiBase = getApiBase;
 window.getWsBase = getWsBase;
 
@@ -67,7 +99,7 @@ function safeShowToast(message, type) {
 
 async function loadConfig() {
     try {
-        const response = await fetch(`${API_BASE}/config`);
+        const response = await fetch(`${window.getApiBase()}/config`);
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -126,7 +158,7 @@ async function saveConfig() {
         }
         
         // 3. 发送请求
-        const response = await fetch(`${API_BASE}/config`, {
+        const response = await fetch(`${window.getApiBase()}/config`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'

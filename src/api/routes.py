@@ -451,6 +451,14 @@ async def get_person_like(request: Request):
         return engine.user_preference.get_frontend_format()
     except Exception as e:
          raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/server_info")
+async def get_server_info(request: Request):
+    """获取服务器信息，供前端动态配置API地址"""
+    return {
+        "api_base": str(request.base_url).rstrip("/"),
+        "ws_base": str(request.base_url).replace("http", "ws").rstrip("/") + "/ws/stream"
+    }
     
 
 

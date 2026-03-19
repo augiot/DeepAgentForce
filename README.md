@@ -160,17 +160,28 @@ pip install -r requirements.txt -i https://mirrors.aliyun.com/pypi/simple/ --tru
 ### 启动服务
 
 ```bash
-# 终端 1: 启动后端 API
+# 终端 1: 启动后端 API (默认端口 8000)
 python main.py
 # 后端运行在 http://localhost:8000
 
-# 终端 2: 启动前端
+# 终端 2: 启动前端 (可选择任意端口)
 cd static
 python -m http.server 8080
 # 前端运行在 http://localhost:8080
 ```
 
-> 💡 **部署说明**: 前端会自动适配后端地址，无需修改任何配置！前后端可以部署在同一服务器或不同服务器上。
+> 💡 **智能端口适配**: 前端会自动检测后端地址！
+> - 如果前端和后端在同一服务器，前端会自动获取 `/api/server_info` 获取后端地址
+> - 如果后端在不同服务器，可通过 `?api=http://后端地址` 参数指定
+> - 前端和后端端口可以任意选择，无需修改配置
+
+### 多种部署方式
+
+| 部署方式 | 前端命令 | 访问地址 |
+|---------|---------|---------|
+| 前后端同服务器 | `python -m http.server 8080` | http://localhost:8080 |
+| 前端 8081，后端 8000 | `python -m http.server 8081` | http://localhost:8081 |
+| 后端在不同服务器 | `python -m http.server 8080` | http://your-ip:8080?api=http://backend-ip:8000 |
 
 ### 🎉 开始体验
 
@@ -302,6 +313,7 @@ AI: [自动调用 RAG 检索相关文档] + [深度分析] + [生成报告]
 
 | Endpoint | 方法 | 说明 |
 |----------|------|------|
+| `/api/server_info` | GET | 获取服务器信息（供前端自动适配） |
 | `/api/chat` | POST | 发送对话消息 |
 | `/api/rag/documents/upload` | POST | 上传文档 |
 | `/api/rag/query` | POST | 知识库问答 |
