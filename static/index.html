@@ -3,82 +3,155 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>智能研究助手 - AI Research Assistant</title>
+    <title>DeepAgentForce - 智能研究助手</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
+        /* ==================== 现代化炫酷主题 ==================== */
         :root {
-            /* 白色主题配色 */
-            --bg-primary: #ffffff;
+            /* 渐变背景色 */
+            --bg-gradient-start: #f0f4ff;
+            --bg-gradient-end: #e8f4f8;
+            
+            /* 玻璃拟态背景 */
+            --glass-bg: rgba(255, 255, 255, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.5);
             --bg-secondary: #f8f9fa;
             --bg-tertiary: #f1f3f5;
             --bg-elevated: #e9ecef;
             
             /* 文字颜色 */
-            --text-primary: #1a1a1a;
-            --text-secondary: #6c757d;
-            --text-tertiary: #adb5bd;
+            --text-primary: #1a1a2e;
+            --text-secondary: #4a4a6a;
+            --text-tertiary: #8a8aaa;
             --text-accent: #3b82f6;
             
-            /* 强调色 */
+            /* 强调色 - 渐变系 */
             --accent-primary: #3b82f6;
-            --accent-secondary: #2563eb;
+            --accent-secondary: #6366f1;
+            --accent-purple: #8b5cf6;
+            --accent-cyan: #06b6d4;
+            --accent-pink: #ec4899;
             --accent-success: #10b981;
             --accent-warning: #f59e0b;
             --accent-error: #ef4444;
-            --accent-purple: #8b5cf6;
-            --accent-cyan: #06b6d4;
             
             /* 边框 */
-            --border-subtle: #e9ecef;
-            --border-light: #dee2e6;
-            --border-medium: #ced4da;
+            --border-subtle: rgba(0, 0, 0, 0.05);
+            --border-light: rgba(0, 0, 0, 0.08);
+            --border-medium: rgba(0, 0, 0, 0.12);
             
-            /* 阴影 */
-            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
-            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
-            --shadow-glow: 0 0 20px rgba(59, 130, 246, 0.2);
+            /* 阴影 - 发光效果 */
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.06);
+            --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 40px rgba(0, 0, 0, 0.12);
+            --shadow-glow-blue: 0 0 30px rgba(59, 130, 246, 0.3);
+            --shadow-glow-purple: 0 0 30px rgba(139, 92, 246, 0.3);
+            --shadow-glow-cyan: 0 0 30px rgba(6, 182, 212, 0.3);
             
             /* 圆角 */
-            --radius-sm: 6px;
-            --radius-md: 10px;
+            --radius-sm: 8px;
+            --radius-md: 12px;
             --radius-lg: 16px;
             --radius-xl: 24px;
+            --radius-full: 9999px;
         }
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            background: var(--bg-primary);
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             color: var(--text-primary);
             line-height: 1.6;
             -webkit-font-smoothing: antialiased;
             overflow: hidden;
+            min-height: 100vh;
+        }
+
+        /* 背景几何装饰 */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 40% 60%, rgba(6, 182, 212, 0.06) 0%, transparent 30%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 浮动几何形状 */
+        .geo-shape {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+            animation: floatShape 20s ease-in-out infinite;
+        }
+
+        .geo-shape-1 {
+            width: 400px;
+            height: 400px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(99, 102, 241, 0.1));
+            top: -100px;
+            right: -100px;
+            animation-delay: 0s;
+        }
+
+        .geo-shape-2 {
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(236, 72, 153, 0.1));
+            bottom: -50px;
+            left: -50px;
+            animation-delay: -5s;
+        }
+
+        .geo-shape-3 {
+            width: 250px;
+            height: 250px;
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.12), rgba(59, 130, 246, 0.1));
+            top: 50%;
+            left: 30%;
+            animation-delay: -10s;
+        }
+
+        @keyframes floatShape {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(20px, -20px) scale(1.05); }
+            50% { transform: translate(-10px, 10px) scale(0.95); }
+            75% { transform: translate(15px, 15px) scale(1.02); }
         }
 
         .app-container {
             display: flex;
             height: 100vh;
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
 
-        /* ============ 左侧导航栏 ============ */
+        /* ============ 左侧导航栏 - 玻璃拟态 ============ */
         .sidebar {
             width: 280px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             z-index: 50;
+            box-shadow: var(--shadow-sm);
         }
 
         .sidebar-header {
@@ -93,25 +166,32 @@
         }
 
         .logo-icon {
-            width: 40px;
-            height: 40px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
-            border-radius: 12px;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple), var(--accent-cyan));
+            background-size: 200% 200%;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
-            box-shadow: var(--shadow-glow);
+            box-shadow: var(--shadow-glow-blue);
+            animation: gradientShift 4s ease infinite;
             color: white;
         }
 
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
         .logo-text {
-            font-size: 18px;
-            font-weight: 600;
-            background: linear-gradient(135deg, var(--text-primary), var(--text-accent));
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -0.5px;
         }
 
         .nav-menu {
@@ -124,7 +204,7 @@
             font-size: 11px;
             font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
             color: var(--text-tertiary);
             padding: 8px 12px;
             margin-top: 16px;
@@ -138,11 +218,11 @@
             display: flex;
             align-items: center;
             gap: 12px;
-            padding: 12px 14px;
+            padding: 14px 16px;
             margin-bottom: 4px;
             border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text-secondary);
             font-size: 14px;
             font-weight: 500;
@@ -157,19 +237,22 @@
             top: 0;
             bottom: 0;
             width: 3px;
-            background: var(--accent-primary);
+            background: linear-gradient(180deg, var(--accent-primary), var(--accent-purple));
             transform: scaleY(0);
-            transition: transform 0.2s;
+            transition: transform 0.25s;
+            border-radius: 0 2px 2px 0;
         }
 
         .nav-item:hover {
             background: rgba(59, 130, 246, 0.08);
-            color: var(--text-accent);
+            color: var(--accent-primary);
+            transform: translateX(4px);
         }
 
         .nav-item.active {
-            background: rgba(59, 130, 246, 0.12);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.12), rgba(139, 92, 246, 0.08));
             color: var(--accent-primary);
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.15);
         }
 
         .nav-item.active::before {
@@ -177,10 +260,17 @@
         }
 
         .nav-icon {
-            font-size: 18px;
             width: 20px;
-            text-align: center;
+            height: 20px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .nav-icon svg {
+            width: 18px;
+            height: 18px;
         }
 
         /* ============ 主内容区 ============ */
@@ -188,19 +278,22 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            background: var(--bg-primary);
             position: relative;
+            z-index: 1;
         }
 
+        /* ============ 顶部导航 - 玻璃拟态 ============ */
         .header {
-            background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--glass-border);
             padding: 16px 28px;
             display: flex;
             align-items: center;
             justify-content: space-between;
             min-height: 68px;
-            backdrop-filter: blur(12px);
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.04);
         }
 
         .header-title {
@@ -213,7 +306,17 @@
         }
 
         .header-icon {
-            font-size: 24px;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-primary);
         }
 
         .header-actions {
@@ -222,22 +325,25 @@
             align-items: center;
         }
 
+        /* ============ 状态指示器 - 炫酷发光 ============ */
         .status-indicator {
             display: flex;
             align-items: center;
             gap: 8px;
             padding: 8px 16px;
-            border-radius: 20px;
+            border-radius: var(--radius-full);
             font-size: 13px;
             font-weight: 500;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border: 1px solid var(--border-light);
+            transition: all 0.3s;
         }
 
         .status-indicator.connected {
             background: rgba(16, 185, 129, 0.1);
             border-color: rgba(16, 185, 129, 0.3);
             color: var(--accent-success);
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.2);
         }
 
         .status-indicator.disconnected {
@@ -252,6 +358,7 @@
             border-radius: 50%;
             background: currentColor;
             animation: pulse 2s ease-in-out infinite;
+            box-shadow: 0 0 8px currentColor;
         }
 
         @keyframes pulse {
@@ -259,38 +366,49 @@
             50% { opacity: 0.6; transform: scale(0.85); }
         }
 
+        /* ============ 图标按钮 - 发光悬停 ============ */
         .icon-btn {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
+            background: var(--glass-bg);
             border: 1px solid var(--border-light);
-            background: var(--bg-tertiary);
-            border-radius: 10px;
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text-secondary);
-            font-size: 18px;
+        }
+
+        .icon-btn svg {
+            width: 18px;
+            height: 18px;
         }
 
         .icon-btn:hover {
-            background: var(--bg-elevated);
-            border-color: var(--border-medium);
-            color: var(--text-accent);
-            transform: translateY(-1px);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-glow-blue);
         }
 
-        /* ============ 页面容器 ============ */
+        /* ============ 页面容器 - 过渡动画 ============ */
         .page {
             display: none;
             flex: 1;
             overflow: hidden;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.35s ease, transform 0.35s ease;
         }
 
         .page.active {
             display: flex;
             flex-direction: column;
+            opacity: 1;
+            transform: translateY(0);
         }
 
         /* ============ 对话页面 ============ */
@@ -300,10 +418,13 @@
             overflow: hidden;
         }
 
+        /* ============ 历史记录侧边栏 - 玻璃拟态 ============ */
         .history-sidebar {
             width: 260px;
-            background: var(--bg-secondary);
-            border-right: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
             display: flex;
             flex-direction: column;
         }
@@ -332,7 +453,7 @@
         .history-item {
             padding: 10px 12px;
             margin-bottom: 4px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
             font-size: 13px;
             color: var(--text-secondary);
@@ -343,8 +464,67 @@
         }
         
         .history-item:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-primary);
+            background: rgba(59, 130, 246, 0.08);
+            color: var(--accent-primary);
+        }
+
+        /* 🆕 选中状态的高亮样式 */
+        .history-item.active {
+            background: var(--accent-primary);
+            color: #ffffff;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        .history-item.active:hover {
+            background: var(--accent-primary);
+            color: #ffffff;
+            opacity: 0.9;
+        }
+
+        /* 🆕 历史项标题容器 */
+        .history-item-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            width: 100%;
+            gap: 8px;
+        }
+
+        .history-item-title {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* 🆕 删除按钮样式 */
+        .history-delete-btn {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: inherit;
+            padding: 2px;
+            border-radius: 4px;
+            transition: all 0.2s;
+            flex-shrink: 0;
+        }
+
+        .history-item:hover .history-delete-btn {
+            display: flex;
+        }
+
+        .history-delete-btn:hover {
+            background: rgba(255, 77, 79, 0.15);
+            color: #ff4d4f;
+        }
+
+        .history-item.active .history-delete-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ff4d4f;
         }
 
         .chat-area {
@@ -382,6 +562,7 @@
             padding-bottom: 20px;
         }
 
+        /* ============ 欢迎屏幕 - 炫酷设计 ============ */
         .welcome-screen {
             display: flex;
             flex-direction: column;
@@ -393,71 +574,122 @@
         }
 
         .welcome-icon {
-            width: 100px;
-            height: 100px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
-            border-radius: 28px;
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple), var(--accent-cyan));
+            background-size: 200% 200%;
+            border-radius: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 48px;
-            margin-bottom: 28px;
-            box-shadow: var(--shadow-glow);
-            animation: float 3s ease-in-out infinite;
+            margin-bottom: 32px;
+            box-shadow: 0 20px 60px rgba(59, 130, 246, 0.3);
+            animation: float 3s ease-in-out infinite, gradientShift 4s ease infinite;
+            position: relative;
+        }
+
+        .welcome-icon::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 36px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.5;
+        }
+
+        .welcome-icon svg {
+            width: 56px;
+            height: 56px;
+            color: white;
         }
 
         @keyframes float {
             0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-12px); }
+            50% { transform: translateY(-15px); }
         }
 
         .welcome-title {
-            font-size: 42px;
-            font-weight: 700;
+            font-size: 44px;
+            font-weight: 800;
             margin-bottom: 14px;
-            background: linear-gradient(135deg, var(--text-primary), var(--text-accent));
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-primary) 50%, var(--accent-purple) 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            letter-spacing: -1px;
         }
 
         .welcome-subtitle {
-            font-size: 16px;
+            font-size: 17px;
             color: var(--text-secondary);
             margin-bottom: 40px;
             max-width: 600px;
-            line-height: 1.6;
+            line-height: 1.7;
         }
 
+        /* ============ 快捷提问卡片 - 玻璃拟态 + 悬停效果 ============ */
         .quick-prompts {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-            gap: 14px;
+            gap: 16px;
             width: 100%;
             max-width: 900px;
         }
 
         .quick-prompt-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 20px;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .quick-prompt-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-purple), var(--accent-cyan));
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform 0.35s;
         }
 
         .quick-prompt-card:hover {
-            border-color: var(--accent-primary);
-            box-shadow: var(--shadow-md);
-            transform: translateY(-4px);
-            background: var(--bg-tertiary);
+            border-color: rgba(59, 130, 246, 0.3);
+            box-shadow: 0 12px 40px rgba(59, 130, 246, 0.15);
+            transform: translateY(-6px);
+        }
+
+        .quick-prompt-card:hover::before {
+            transform: scaleX(1);
         }
 
         .quick-prompt-icon {
-            font-size: 28px;
-            margin-bottom: 10px;
-            display: block;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .quick-prompt-icon svg {
+            width: 22px;
+            height: 22px;
+            color: var(--accent-primary);
         }
 
         .quick-prompt-title {
@@ -498,18 +730,23 @@
         }
 
         .message-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
             flex-shrink: 0;
         }
 
+        .message-avatar svg {
+            width: 18px;
+            height: 18px;
+            color: white;
+        }
+
         .message.user .message-avatar {
-            background: linear-gradient(135deg, var(--accent-purple), var(--accent-primary));
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-pink));
         }
 
         .message.assistant .message-avatar {
@@ -529,33 +766,40 @@
         }
 
         .message-content {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 18px 20px;
             color: var(--text-primary);
             line-height: 1.7;
             font-size: 14px;
+            margin-left: 48px;
         }
 
         .message-content p { margin-bottom: 10px; }
         .message-content p:last-child { margin-bottom: 0; }
-        .message-content code { background: #e0e0e0; padding: 2px 4px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
-        .message-content pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 8px; overflow-x: auto; margin: 10px 0; }
+        .message-content code { background: rgba(0, 0, 0, 0.06); padding: 2px 6px; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.9em; }
+        .message-content pre { background: #1e1e2e; color: #cdd6f4; padding: 16px; border-radius: var(--radius-md); overflow-x: auto; margin: 12px 0; }
         .message-content pre code { background: transparent; padding: 0; color: inherit; }
 
         .message.user .message-content {
-            background: rgba(59, 130, 246, 0.08);
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.08));
             border-color: rgba(59, 130, 246, 0.2);
+            margin-left: 48px;
         }
 
-        /* ============ 思考过程样式 - 修复高度限制 ============ */
+        /* ============ 思考过程样式 ============ */
         .thinking-process {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 16px 20px;
             margin-bottom: 16px;
+            margin-left: 48px;
             box-shadow: var(--shadow-sm);
         }
 
@@ -569,9 +813,18 @@
         }
 
         .thinking-toggle {
-            font-size: 14px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: var(--text-secondary);
+        }
+
+        .thinking-toggle svg {
+            width: 16px;
+            height: 16px;
         }
 
         .thinking-toggle.collapsed {
@@ -586,10 +839,19 @@
         }
 
         .thinking-icon {
-            font-size: 18px;
+            width: 22px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        /* 🔥 修复：移除 max-height 限制，让思考过程完全展开 */
+        .thinking-icon svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent-primary);
+        }
+
         .thinking-content {
             overflow: visible;
             transition: opacity 0.3s ease, margin-top 0.3s ease;
@@ -607,9 +869,9 @@
         .thinking-step {
             padding: 12px 16px;
             margin-bottom: 10px;
-            background: var(--bg-primary);
+            background: rgba(255, 255, 255, 0.5);
             border-left: 3px solid var(--accent-primary);
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: flex-start;
             gap: 12px;
@@ -632,9 +894,18 @@
         }
 
         .thinking-step .step-icon {
-            font-size: 18px;
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             line-height: 1.4;
+        }
+
+        .thinking-step .step-icon svg {
+            width: 18px;
+            height: 18px;
         }
 
         .thinking-step .step-content {
@@ -704,14 +975,16 @@
                 box-shadow: 0 0 0 rgba(59, 130, 246, 0);
             }
             50% {
-                box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+                box-shadow: 0 0 25px rgba(59, 130, 246, 0.25);
             }
         }
 
-        /* ============ 输入区域 - 添加文件上传 ============ */
+        /* ============ 输入区域 ============ */
         .input-area {
-            background: var(--bg-secondary);
-            border-top: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
             padding: 20px 24px;
         }
 
@@ -732,20 +1005,29 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            background: var(--bg-tertiary);
+            background: var(--glass-bg);
             border: 1px solid var(--border-light);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             padding: 8px 12px;
             font-size: 13px;
             transition: all 0.2s;
         }
 
         .file-attachment:hover {
-            background: var(--bg-elevated);
+            background: rgba(59, 130, 246, 0.08);
         }
 
         .file-icon {
-            font-size: 16px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-icon svg {
+            width: 14px;
+            height: 14px;
         }
 
         .file-name {
@@ -764,7 +1046,11 @@
         .file-remove {
             cursor: pointer;
             color: var(--text-secondary);
-            font-size: 14px;
+            width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             transition: color 0.2s;
             margin-left: 4px;
         }
@@ -773,21 +1059,24 @@
             color: var(--accent-error);
         }
 
+        /* ============ 输入框容器 - 炫酷效果 ============ */
         .input-container {
             display: flex;
             gap: 12px;
             align-items: flex-end;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-xl);
-            padding: 10px 10px 10px 20px;
+            padding: 8px 8px 8px 20px;
             transition: all 0.3s;
             box-shadow: var(--shadow-sm);
         }
 
         .input-container:focus-within {
             border-color: var(--accent-primary);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15), var(--shadow-glow-blue);
         }
 
         .message-input {
@@ -800,7 +1089,7 @@
             resize: none;
             min-height: 20px;
             max-height: 200px;
-            padding: 6px 0;
+            padding: 8px 0;
             outline: none;
         }
 
@@ -815,45 +1104,56 @@
         }
 
         .attach-button {
-            width: 36px;
-            height: 36px;
+            width: 38px;
+            height: 38px;
             background: transparent;
             color: var(--text-secondary);
             border: none;
-            border-radius: 8px;
+            border-radius: var(--radius-md);
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
+        }
+
+        .attach-button svg {
+            width: 20px;
+            height: 20px;
         }
 
         .attach-button:hover {
-            background: var(--bg-tertiary);
-            color: var(--text-accent);
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
         }
 
+        /* ============ 发送按钮 - 炫酷渐变 ============ */
         .send-button {
-            width: 44px;
-            height: 44px;
-            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            width: 46px;
+            height: 46px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary), var(--accent-purple));
+            background-size: 200% 200%;
             color: white;
             border: none;
-            border-radius: 12px;
+            border-radius: var(--radius-md);
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 18px;
             flex-shrink: 0;
-            box-shadow: var(--shadow-sm);
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+            animation: gradientShift 3s ease infinite;
+        }
+
+        .send-button svg {
+            width: 20px;
+            height: 20px;
         }
 
         .send-button:hover:not(:disabled) {
-            transform: scale(1.05);
-            box-shadow: var(--shadow-md);
+            transform: scale(1.08) translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
         }
 
         .send-button:disabled {
@@ -870,6 +1170,8 @@
             flex: 1;
             overflow-y: auto;
             padding: 32px;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            min-height: 100%;
         }
 
         .knowledge-content {
@@ -882,14 +1184,548 @@
         }
 
         .kb-title {
-            font-size: 28px;
+            font-size: 32px;
             font-weight: 700;
             margin-bottom: 8px;
+            background: linear-gradient(135deg, var(--text-primary), var(--accent-primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
         .kb-subtitle {
             font-size: 14px;
             color: var(--text-secondary);
+        }
+
+        /* ============ Skills 页面样式 ============ */
+        .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 16px;
+        }
+
+        .skill-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+        }
+
+        .skill-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: var(--shadow-sm);
+            transform: translateY(-2px);
+        }
+
+        .skill-card-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .skill-icon {
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .skill-info {
+            flex: 1;
+            margin-left: 12px;
+        }
+
+        .skill-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .skill-version {
+            font-size: 12px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .badge {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: 600;
+        }
+
+        .skill-description {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 12px;
+        }
+
+        .skill-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .skill-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .skill-tag {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent-primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .skill-card-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .skill-action-btn {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid var(--border-light);
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: var(--text-secondary);
+        }
+
+        .skill-action-btn:hover {
+            background: var(--bg-tertiary);
+            border-color: var(--border-medium);
+            color: var(--text-primary);
+        }
+
+        .skill-action-btn.primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+            border: none;
+        }
+
+        .skill-action-btn.primary:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .skill-action-btn.danger:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: var(--accent-error);
+            color: var(--accent-error);
+        }
+
+        /* 添加 Skill 卡片 */
+        .add-skill-card {
+            background: var(--bg-primary);
+            border: 2px dashed var(--border-medium);
+            border-radius: var(--radius-md);
+            padding: 40px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            min-height: 280px;
+            text-align: center;
+        }
+
+        .add-skill-card:hover {
+            border-color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.03);
+        }
+
+        .add-skill-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--bg-tertiary);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+            transition: all 0.25s;
+        }
+
+        .add-skill-card:hover .add-skill-icon {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .add-skill-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 6px;
+        }
+
+        .add-skill-hint {
+            font-size: 13px;
+            color: var(--text-tertiary);
+        }
+
+        /* Skills 页面专用样式 - 修复布局 */
+        #skillsPage .kb-grid {
+            grid-template-columns: 1fr;
+        }
+
+        #skillsPage .kb-section {
+            min-height: calc(100vh - 200px);
+        }
+
+        #skillsPage .section-body {
+            padding: 20px;
+            min-height: 400px;
+        }
+
+        #skillsPage .skills-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 16px;
+            width: 100%;
+        }
+
+        /* ============ 知识库页面 ============ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: var(--bg-primary);
+            border-radius: var(--radius-lg);
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close:hover {
+            background: var(--bg-elevated);
+            color: var(--accent-error);
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border-light);
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+
+        /* ============ 表单样式 ============ */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input, .form-textarea {
+            width: 100%;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .form-input:focus, .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        .form-textarea {
+            min-height: 300px;
+            resize: vertical;
+            line-height: 1.5;
+        }
+
+        .form-hint {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            margin-top: 6px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-section {
+            margin-bottom: 24px;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .form-section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ============ 脚本列表 ============ */
+        .script-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .script-item {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .script-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-tertiary);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .script-info { flex: 1; }
+
+        .script-add-btn {
+            width: 36px;
+            height: 36px;
+            border: 1px dashed var(--border-medium);
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 18px;
+            color: var(--text-tertiary);
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .script-add-btn:hover {
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        /* ============ 按钮样式 ============ */
+        .btn {
+            padding: 10px 20px;
+            border-radius: var(--radius-md);
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-secondary:hover {
+            background: var(--bg-elevated);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--accent-error), #dc2626);
+            color: white;
+        }
+
+        /* ============ 验证结果 ============ */
+        .validation-results {
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: var(--radius-md);
+            display: none;
+        }
+
+        .validation-results.show { display: block; }
+        .validation-results.error {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .validation-results.success {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .validation-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .validation-list {
+            font-size: 12px;
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        /* ============ 确认对话框 ============ */
+        .confirm-dialog {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .confirm-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .confirm-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .confirm-message {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
         }
 
         .kb-stats {
@@ -899,31 +1735,40 @@
             margin-bottom: 28px;
         }
 
+        /* ============ 统计卡片 - 玻璃拟态 ============ */
         .stat-card {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 20px;
             display: flex;
             align-items: center;
             gap: 16px;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .stat-card:hover {
-            border-color: var(--border-medium);
-            transform: translateY(-2px);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-md);
+            border-color: rgba(59, 130, 246, 0.2);
         }
 
         .stat-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 12px;
+            width: 52px;
+            height: 52px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 24px;
+        }
+
+        .stat-icon svg {
+            width: 24px;
+            height: 24px;
+            color: var(--accent-primary);
         }
 
         .stat-info {
@@ -937,7 +1782,7 @@
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: 26px;
             font-weight: 700;
             color: var(--text-primary);
         }
@@ -949,8 +1794,10 @@
         }
 
         .kb-section {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             overflow: hidden;
         }
@@ -966,30 +1813,54 @@
         .section-title {
             font-size: 16px;
             font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent-primary);
         }
 
         .section-body {
             padding: 24px;
         }
 
+        /* ============ 上传区域 - 炫酷虚线框 ============ */
         .upload-area {
-            border: 2px dashed var(--border-medium);
-            border-radius: var(--radius-md);
-            padding: 40px;
+            border: 2px dashed rgba(59, 130, 246, 0.3);
+            border-radius: var(--radius-lg);
+            padding: 48px;
             text-align: center;
             transition: all 0.3s;
             cursor: pointer;
+            background: rgba(59, 130, 246, 0.02);
         }
 
         .upload-area:hover,
         .upload-area.dragging {
             border-color: var(--accent-primary);
             background: rgba(59, 130, 246, 0.05);
+            box-shadow: inset 0 0 30px rgba(59, 130, 246, 0.05);
         }
 
         .upload-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: var(--radius-lg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-icon svg {
+            width: 32px;
+            height: 32px;
+            color: var(--accent-primary);
         }
 
         .upload-title {
@@ -1008,18 +1879,18 @@
             background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
             color: white;
             border: none;
-            padding: 10px 24px;
-            border-radius: 20px;
+            padding: 12px 28px;
+            border-radius: var(--radius-full);
             font-size: 14px;
-            font-weight: 500;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
         }
 
         .upload-button:hover, .rebuild-button:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
         }
 
         .upload-button:disabled, .rebuild-button:disabled {
@@ -1036,6 +1907,7 @@
             overflow-y: auto;
         }
 
+        /* ============ 文档列表项 ============ */
         .document-item {
             padding: 16px 24px;
             border-bottom: 1px solid var(--border-subtle);
@@ -1050,19 +1922,24 @@
         }
 
         .document-item:hover {
-            background: var(--bg-tertiary);
+            background: rgba(59, 130, 246, 0.04);
         }
 
         .doc-icon {
             width: 44px;
             height: 44px;
-            background: rgba(59, 130, 246, 0.1);
-            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+            border-radius: var(--radius-md);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
             flex-shrink: 0;
+        }
+
+        .doc-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
         }
 
         .doc-info {
@@ -1091,14 +1968,18 @@
             height: 36px;
             background: transparent;
             border: 1px solid var(--border-light);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
             transition: all 0.2s;
-            font-size: 16px;
             color: var(--text-secondary);
+        }
+
+        .doc-action-btn svg {
+            width: 16px;
+            height: 16px;
         }
 
         .doc-action-btn:hover {
@@ -1120,11 +2001,18 @@
         }
 
         .config-section {
-            background: var(--bg-secondary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 28px;
             margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .config-section:hover {
+            box-shadow: var(--shadow-md);
         }
 
         .config-section-title {
@@ -1137,7 +2025,17 @@
         }
 
         .config-section-icon {
-            font-size: 24px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .config-section-icon svg {
+            width: 20px;
+            height: 20px;
+            color: var(--accent-primary);
         }
 
         .form-group {
@@ -1160,10 +2058,10 @@
 
         .form-input {
             width: 100%;
-            background: var(--bg-primary);
+            background: rgba(255, 255, 255, 0.6);
             border: 1px solid var(--border-light);
             border-radius: var(--radius-md);
-            padding: 12px 16px;
+            padding: 14px 18px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 13px;
             color: var(--text-primary);
@@ -1174,6 +2072,7 @@
             outline: none;
             border-color: var(--accent-primary);
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            background: white;
         }
 
         .form-input::placeholder {
@@ -1186,26 +2085,32 @@
             margin-top: 6px;
         }
 
+        /* ============ 保存按钮 - 炫酷渐变 ============ */
         .save-button {
             background: linear-gradient(135deg, var(--accent-success), #059669);
             color: white;
             border: none;
-            padding: 12px 32px;
-            border-radius: 24px;
+            padding: 14px 36px;
+            border-radius: var(--radius-full);
             font-size: 15px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: var(--shadow-sm);
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
             display: flex;
             align-items: center;
             gap: 8px;
             margin-top: 24px;
         }
 
+        .save-button svg {
+            width: 18px;
+            height: 18px;
+        }
+
         .save-button:hover {
             transform: translateY(-2px);
-            box-shadow: var(--shadow-md);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
         }
 
         .save-button:disabled {
@@ -1218,8 +2123,10 @@
             position: fixed;
             bottom: 28px;
             right: 28px;
-            background: var(--bg-primary);
-            border: 1px solid var(--border-light);
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
             border-radius: var(--radius-lg);
             padding: 16px 24px;
             box-shadow: var(--shadow-lg);
@@ -1229,62 +2136,6 @@
             z-index: 1000;
             animation: slideIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             min-width: 300px;
-        }
-
-        .preference-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px;
-            margin-bottom: 8px;
-            background: var(--bg-tertiary);
-            border-radius: var(--radius-md);
-            transition: all 0.2s;
-        }
-        
-        .preference-item:hover {
-            background: var(--bg-elevated);
-            transform: translateX(4px);
-        }
-        
-        .preference-item .rank {
-            font-weight: 700;
-            color: var(--accent-primary);
-            min-width: 32px;
-        }
-        
-        .preference-item .entity {
-            font-weight: 600;
-            flex: 1;
-        }
-        
-        .preference-item .type {
-            font-size: 12px;
-            color: var(--text-secondary);
-            background: var(--bg-secondary);
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-        
-        .preference-item .score-bar {
-            flex: 0 0 100px;
-            height: 6px;
-            background: var(--bg-secondary);
-            border-radius: 3px;
-            overflow: hidden;
-        }
-        
-        .preference-item .score-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
-            transition: width 0.3s;
-        }
-        
-        .preference-item .score {
-            font-weight: 600;
-            color: var(--accent-primary);
-            min-width: 48px;
-            text-align: right;
         }
 
         @keyframes slideIn {
@@ -1307,12 +2158,89 @@
         }
 
         .toast-icon {
-            font-size: 20px;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toast-icon svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .toast.success .toast-icon svg {
+            color: var(--accent-success);
+        }
+
+        .toast.error .toast-icon svg {
+            color: var(--accent-error);
         }
 
         .toast-message {
             font-size: 14px;
             flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* ============ 用户画像相关 ============ */
+        .preference-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.4);
+            border-radius: var(--radius-md);
+            transition: all 0.2s;
+        }
+        
+        .preference-item:hover {
+            background: rgba(59, 130, 246, 0.08);
+            transform: translateX(4px);
+        }
+        
+        .preference-item .rank {
+            font-weight: 700;
+            color: var(--accent-primary);
+            min-width: 32px;
+        }
+        
+        .preference-item .entity {
+            font-weight: 600;
+            flex: 1;
+        }
+        
+        .preference-item .type {
+            font-size: 12px;
+            color: var(--text-secondary);
+            background: rgba(59, 130, 246, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .preference-item .score-bar {
+            flex: 0 0 100px;
+            height: 6px;
+            background: var(--border-light);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .preference-item .score-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-cyan));
+            transition: width 0.3s;
+        }
+        
+        .preference-item .score {
+            font-weight: 600;
+            color: var(--accent-primary);
+            min-width: 48px;
+            text-align: right;
         }
 
         .empty-state {
@@ -1322,9 +2250,18 @@
         }
 
         .empty-icon {
-            font-size: 56px;
-            margin-bottom: 14px;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 14px;
             opacity: 0.4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .empty-icon svg {
+            width: 48px;
+            height: 48px;
         }
 
         .empty-text {
@@ -1359,40 +2296,59 @@
             .kb-stats {
                 grid-template-columns: 1fr;
             }
+
+            .welcome-title {
+                font-size: 32px;
+            }
+
+            .message-content {
+                margin-left: 0;
+            }
+
+            .thinking-process {
+                margin-left: 0;
+            }
         }
     </style>
 </head>
 <body>
+    <!-- 背景几何装饰 -->
+    <div class="geo-shape geo-shape-1"></div>
+    <div class="geo-shape geo-shape-2"></div>
+    <div class="geo-shape geo-shape-3"></div>
+    
     <div class="app-container">
         <aside class="sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="logo">
-                    <div class="logo-icon">🚀</div>
+                    <div class="logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                    </div>
                     <span class="logo-text">AI Research</span>
                 </div>
             </div>
             <nav class="nav-menu">
                 <div class="nav-section-title">功能</div>
                 <div class="nav-item active" data-page="chat">
-                    <span class="nav-icon">💬</span>
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                     <span>智能对话</span>
                 </div>
                 <div class="nav-item" data-page="knowledge">
-                    <span class="nav-icon">📚</span>
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></span>
                     <span>知识库</span>
                 </div>
                 <div class="nav-item" data-page="personlike">
-                    <span class="nav-icon">👤</span>
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
                     <span>用户画像</span>
                 </div>
                 <div class="nav-item" data-page="skills">
-                    <span class="nav-icon">🛠️</span>
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg></span>
                     <span>Skill 管理</span>
                 </div>
                 
                 <div class="nav-section-title">设置</div>
                 <div class="nav-item" data-page="config">
-                    <span class="nav-icon">⚙️</span>
+                    <span class="nav-icon"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></span>
                     <span>模型配置</span>
                 </div>
             </nav>
@@ -1401,7 +2357,9 @@
         <main class="main-content">
             <header class="header">
                 <h1 class="header-title">
-                    <span class="header-icon" id="headerIcon">💬</span>
+                    <span class="header-icon" id="headerIcon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </span>
                     <span id="headerTitle">智能对话</span>
                 </h1>
                 <div class="header-actions">
@@ -1409,7 +2367,9 @@
                         <div class="status-dot"></div>
                         <span id="statusText">未连接</span>
                     </div>
-                    <button class="icon-btn" id="newChatBtn" title="新对话">➕</button>
+                    <button class="icon-btn" id="newChatBtn" title="新对话">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                    </button>
                 </div>
             </header>
 
@@ -1418,7 +2378,9 @@
                     <aside class="history-sidebar">
                         <div class="history-header">
                             <div class="history-title">历史对话</div>
-                            <button class="icon-btn" id="sidebarNewChatBtn" style="width: 32px; height: 32px; font-size: 14px;" title="新建对话">➕</button>
+                            <button class="icon-btn" id="sidebarNewChatBtn" style="width: 32px; height: 32px;" title="新建对话">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                            </button>
                         </div>
                         <div class="history-list" id="historyList">
                         </div>
@@ -1428,7 +2390,9 @@
                         <div class="messages-area" id="messagesArea">
                             <div class="messages-wrapper" id="messagesWrapper">
                                 <div class="welcome-screen" id="welcomeScreen">
-                                    <div class="welcome-icon">🚀</div>
+                                    <div class="welcome-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                                </div>
                                     <h1 class="welcome-title">你好,我是智能研究助手</h1>
                                     <p class="welcome-subtitle">
                                         我可以帮你搜索网络信息、查询知识库文档,并为你生成深入的研究报告。
@@ -1436,28 +2400,28 @@
                                     
                                     <div class="quick-prompts">
                                         <div class="quick-prompt-card" data-prompt="查询公司考勤制度">
-                                            <span class="quick-prompt-icon">📋</span>
-                                            <div class="quick-prompt-title">查询内部文档</div>
-                                            <div class="quick-prompt-desc">搜索知识库中的文档资料</div>
-                                        </div>
-                                        
-                                        <div class="quick-prompt-card" data-prompt="Python 3.13 有哪些新特性?">
-                                            <span class="quick-prompt-icon">💻</span>
-                                            <div class="quick-prompt-title">技术研究</div>
-                                            <div class="quick-prompt-desc">了解最新的技术动态</div>
-                                        </div>
-                                        
-                                        <div class="quick-prompt-card" data-prompt="对比 GPT-4 和 Claude 的能力">
-                                            <span class="quick-prompt-icon">⚖️</span>
-                                            <div class="quick-prompt-title">对比分析</div>
-                                            <div class="quick-prompt-desc">深入对比不同产品</div>
-                                        </div>
-                                        
-                                        <div class="quick-prompt-card" data-prompt="分析 2024 AI 发展趋势">
-                                            <span class="quick-prompt-icon">📊</span>
-                                            <div class="quick-prompt-title">趋势分析</div>
-                                            <div class="quick-prompt-desc">生成行业分析报告</div>
-                                        </div>
+                                        <div class="quick-prompt-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg></div>
+                                        <div class="quick-prompt-title">查询内部文档</div>
+                                        <div class="quick-prompt-desc">搜索知识库中的文档资料</div>
+                                    </div>
+                                    
+                                    <div class="quick-prompt-card" data-prompt="Python 3.13 有哪些新特性?">
+                                        <div class="quick-prompt-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></div>
+                                        <div class="quick-prompt-title">技术研究</div>
+                                        <div class="quick-prompt-desc">了解最新的技术动态</div>
+                                    </div>
+                                    
+                                    <div class="quick-prompt-card" data-prompt="对比 GPT-4 和 Claude 的能力">
+                                        <div class="quick-prompt-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                                        <div class="quick-prompt-title">对比分析</div>
+                                        <div class="quick-prompt-desc">深入对比不同产品</div>
+                                    </div>
+                                    
+                                    <div class="quick-prompt-card" data-prompt="分析 2024 AI 发展趋势">
+                                        <div class="quick-prompt-icon"><svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
+                                        <div class="quick-prompt-title">趋势分析</div>
+                                        <div class="quick-prompt-desc">生成行业分析报告</div>
+                                    </div>
                                     </div>
                                 </div>
                             </div>
@@ -1476,8 +2440,12 @@
                                         rows="1"
                                     ></textarea>
                                     <div class="input-actions">
-                                        <button class="attach-button" id="attachButton" title="上传文档">📎</button>
-                                        <button class="send-button" id="sendButton">➤</button>
+                                        <button class="attach-button" id="attachButton" title="上传文档">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+                                        </button>
+                                        <button class="send-button" id="sendButton">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                        </button>
                                     </div>
                                 </div>
                                 <input type="file" id="chatFileInput" accept=".pdf,.docx,.doc,.txt,.md,.markdown,.csv" multiple style="display: none;">
@@ -1497,7 +2465,9 @@
 
                         <div class="kb-stats">
                             <div class="stat-card">
-                                <div class="stat-icon">📄</div>
+                                <div class="stat-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                                </div>
                                 <div class="stat-info">
                                     <div class="stat-label">文档总数</div>
                                     <div class="stat-value" id="statDocs">0</div>
@@ -1507,11 +2477,16 @@
                         <div class="kb-grid">
                             <div class="kb-section">
                                 <div class="section-header">
-                                    <div class="section-title">📤 上传文档</div>
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                        <span style="margin-left: 8px;">上传文档</span>
+                                    </div>
                                 </div>
                                 <div class="section-body">
                                     <div class="upload-area" id="uploadArea">
-                                        <div class="upload-icon">📁</div>
+                                        <div class="upload-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                                        </div>
                                         <div class="upload-title">点击或拖拽上传</div>
                                         <div class="upload-hint">支持 PDF, DOCX, TXT, MD, CSV</div>
                                         <button class="upload-button" onclick="document.getElementById('fileInput').click()">
@@ -1524,12 +2499,20 @@
 
                             <div class="kb-section">
                                 <div class="section-header">
-                                    <div class="section-title">📚 文档列表</div>
-                                    <button class="rebuild-button" id="rebuildButton">🔄 重建索引</button>
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                                        <span style="margin-left: 8px;">文档列表</span>
+                                    </div>
+                                    <button class="rebuild-button" id="rebuildButton">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                                        重建索引
+                                    </button>
                                 </div>
                                 <div class="documents-list" id="documentsList">
                                     <div class="empty-state">
-                                        <div class="empty-icon">📭</div>
+                                        <div class="empty-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                        </div>
                                         <div class="empty-text">暂无文档</div>
                                     </div>
                                 </div>
@@ -1548,8 +2531,10 @@
                         </div>
 
                         <div class="config-section">
-                            <div class="config-section-title">
-                                <span class="config-section-icon">🤖</span>
+                                <div class="config-section-title">
+                                <div class="config-section-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10h-10V2z"/><path d="M12 2v10h10"/></svg>
+                                </div>
                                 <span>LLM 模型配置</span>
                             </div>
                             <div class="form-group">
@@ -1571,7 +2556,9 @@
 
                         <div class="config-section">
                             <div class="config-section-title">
-                                <span class="config-section-icon">🔍</span>
+                                <div class="config-section-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                                </div>
                                 <span>Tavily 搜索配置</span>
                             </div>
                             <div class="form-group">
@@ -1583,7 +2570,9 @@
 
                         <div class="config-section">
                             <div class="config-section-title">
-                                <span class="config-section-icon">🔥</span>
+                                <div class="config-section-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4"/><path d="M12 18v4"/><path d="M4.93 4.93l2.83 2.83"/><path d="M16.24 16.24l2.83 2.83"/><path d="M2 12h4"/><path d="M18 12h4"/><path d="M4.93 19.07l2.83-2.83"/><path d="M16.24 7.76l2.83-2.83"/></svg>
+                                </div>
                                 <span>Firecrawl 爬取配置(选填)</span>
                             </div>
                             <div class="form-group">
@@ -1600,7 +2589,9 @@
 
                         <div class="config-section">
                             <div class="config-section-title">
-                                <span class="config-section-icon">🧬</span>
+                                <div class="config-section-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"/><path d="M5 16l3-8 4 8 3-8h6"/><path d="M9 8V4"/><path d="M15 8V4"/></svg>
+                                </div>
                                 <span>Embedding 模型配置</span>
                             </div>
                             <div class="form-group">
@@ -1621,7 +2612,7 @@
                         </div>
 
                         <button class="save-button" id="saveConfigBtn">
-                            <span>💾</span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
                             <span>保存配置</span>
                         </button>
                     </div>
@@ -1632,18 +2623,25 @@
                 <div class="config-container">
                     <div class="config-content">
                         <div class="kb-header">
-                            <h1 class="kb-title">👤 用户画像</h1>
+                            <h1 class="kb-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                用户画像
+                            </h1>
                             <p class="kb-subtitle">基于对话历史的知识图谱分析</p>
                         </div>
                         
                         <button class="upload-button" id="analyzePersonLikeBtn" style="margin-bottom: 24px;">
-                            🔍 开始分析
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px;"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            开始分析
                         </button>
                         
                         <div id="personLikeResult" style="display: none;">
                             <div class="kb-section" style="margin-bottom: 20px;">
                                 <div class="section-header">
-                                    <div class="section-title">🕸️ 知识图谱</div>
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="2"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="6" r="2"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/><path d="M12 10a2 2 0 0 1-2 2"/><path d="M12 14a2 2 0 0 0 2 2"/><path d="M10 12a2 2 0 0 0 2-2"/><path d="M14 12a2 2 0 0 1-2-2"/><path d="M8.5 8.5l-2 2"/><path d="M17.5 15.5l-2 2"/><path d="M8.5 15.5l2 2"/><path d="M17.5 8.5l2 2"/></svg>
+                                        <span style="margin-left: 8px;">知识图谱</span>
+                                    </div>
                                 </div>
                                 <div class="section-body">
                                     <canvas id="graphCanvas" width="800" height="500" style="width: 100%; border: 1px solid var(--border-light); border-radius: 8px;"></canvas>
@@ -1652,7 +2650,10 @@
                             
                             <div class="kb-section" style="margin-bottom: 20px;">
                                 <div class="section-header">
-                                    <div class="section-title">💡 Top 用户偏好</div>
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/></svg>
+                                        <span style="margin-left: 8px;">Top 用户偏好</span>
+                                    </div>
                                 </div>
                                 <div class="section-body">
                                     <div id="preferenceList"></div>
@@ -1660,51 +2661,91 @@
                             </div>
                             
                             <div class="kb-stats">
-                                <div class="stat-card">
-                                    <div class="stat-icon">📊</div>
-                                    <div class="stat-info">
-                                        <div class="stat-label">总节点数</div>
-                                        <div class="stat-value" id="statNodes">0</div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">总节点数</div>
+                                            <div class="stat-value" id="statNodes">0</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon">🔗</div>
-                                    <div class="stat-info">
-                                        <div class="stat-label">总边数</div>
-                                        <div class="stat-value" id="statEdges">0</div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">总边数</div>
+                                            <div class="stat-value" id="statEdges">0</div>
+                                        </div>
                                     </div>
-                                </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon">👤</div>
-                                    <div class="stat-info">
-                                        <div class="stat-label">用户连接</div>
-                                        <div class="stat-value" id="statConnections">0</div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">用户连接</div>
+                                            <div class="stat-value" id="statConnections">0</div>
+                                        </div>
                                     </div>
+                                    <div class="stat-card">
+                                        <div class="stat-icon">
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
+                                        </div>
+                                        <div class="stat-info">
+                                            <div class="stat-label">聚类系数</div>
+                                            <div class="stat-value" id="statClustering">0</div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="page" id="skillsPage">
+                <div class="knowledge-container">
+                    <div class="knowledge-content">
+                        <div class="kb-header">
+                            <h1 class="kb-title">Skill 管理</h1>
+                            <p class="kb-subtitle">管理智能体的技能插件</p>
+                        </div>
+
+                        <div class="kb-grid">
+                            <div class="kb-section" style="flex: 1;">
+                                <div class="section-header">
+                                    <div class="section-title">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+                                        <span style="margin-left: 8px;">已安装的技能插件</span>
+                                    </div>
+                                    <button class="upload-button" id="addSkillBtn" onclick="openSkillModal()">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                                        添加 Skill
+                                    </button>
                                 </div>
-                                <div class="stat-card">
-                                    <div class="stat-icon">🎯</div>
-                                    <div class="stat-info">
-                                        <div class="stat-label">聚类系数</div>
-                                        <div class="stat-value" id="statClustering">0</div>
+                                <div class="section-body">
+                                    <div class="skills-grid" id="skillsGrid">
+                                        <!-- Skills 将通过 JS 动态加载 -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>    
+            </div>
         </main>
     </div>
 
     <script src="config.js"></script>
     <script src="knowledge.js"></script>
     <script src="chat.js"></script>
+    <script src="skills.js"></script>
     <script>
 /**
  * 用户画像模块
  */
 // 自动获取当前服务器的 API 地址 (使用全局函数)
-const PERSON_API_BASE = window.getApiBase ? window.getApiBase() : `${window.location.protocol}//${window.location.hostname}:8000/api`;
+const PERSON_API_BASE = window.getApiUrl ? window.getApiUrl() : `${window.location.protocol}//${window.location.hostname}:8000/api`;
 
 document.addEventListener('DOMContentLoaded', () => {
     const btn = document.getElementById('analyzePersonLikeBtn');
@@ -1887,13 +2928,13 @@ function renderBeautifulGraph(graphData) {
 }
 </script>
     <script>
-        // 页面切换
+        // 页面切换 - 使用 SVG 图标
         const pageIcons = {
-            'chat': '💬',
-            'knowledge': '📚',
-            'personlike': '👤',
-            'skills': '🛠️',
-            'config': '⚙️'
+            'chat': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>',
+            'knowledge': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+            'personlike': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+            'skills': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+            'config': '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>'
         };
 
         const pageTitles = {
@@ -1908,27 +2949,23 @@ function renderBeautifulGraph(graphData) {
             item.addEventListener('click', () => {
                 const page = item.getAttribute('data-page');
                 console.log('点击了导航:', page);
-                
+
                 document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
-                
-                if (page === 'skills') {
-                    // 跳转到 skills.html
-                    window.location.href = 'skills.html';
-                    return;
-                }
-                
+
                 document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
                 document.getElementById(page + 'Page').classList.add('active');
-                
-                document.getElementById('headerIcon').textContent = pageIcons[page];
+
+                document.getElementById('headerIcon').innerHTML = pageIcons[page];
                 document.getElementById('headerTitle').textContent = pageTitles[page];
-                
+
                 if (page === 'knowledge') {
                     if (typeof loadKnowledgeBaseStats === 'function') loadKnowledgeBaseStats();
                     if (typeof loadDocuments === 'function') loadDocuments();
                 } else if (page === 'config') {
-                    if (typeof loadConfig === 'function') loadConfig();
+                    if (typeof populateConfigFields === 'function') populateConfigFields();
+                } else if (page === 'skills') {
+                    if (typeof loadSkills === 'function') loadSkills();
                 }
             });
         });
@@ -1948,7 +2985,9 @@ function renderBeautifulGraph(graphData) {
             const toast = document.createElement('div');
             toast.className = `toast ${type}`;
             toast.innerHTML = `
-                <span class="toast-icon">${type === 'success' ? '✅' : '❌'}</span>
+                <span class="toast-icon">${type === 'success' 
+                    ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' 
+                    : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>'}
                 <span class="toast-message">${message}</span>
             `;
             document.body.appendChild(toast);
@@ -1961,5 +3000,95 @@ function renderBeautifulGraph(graphData) {
 
         window.showToast = showToast;
     </script>
+
+    <!-- 添加/编辑 Skill Modal -->
+    <div class="modal-overlay" id="skillModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle">添加新 Skill</h2>
+                <button class="modal-close" onclick="closeSkillModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="skillForm">
+                    <div class="form-section">
+                        <div class="form-section-title">📝 基本信息</div>
+                        <div class="form-group">
+                            <label class="form-label">Skill 名称 *</label>
+                            <input type="text" class="form-input" id="skillName" placeholder="例如: my-custom-skill" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">描述 *</label>
+                            <input type="text" class="form-input" id="skillDescription" placeholder="描述这个 Skill 的用途" required>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">版本</label>
+                                <input type="text" class="form-input" id="skillVersion" placeholder="1.0.0" value="1.0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">作者</label>
+                                <input type="text" class="form-input" id="skillAuthor" placeholder="Your Name">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">标签 (用逗号分隔)</label>
+                            <input type="text" class="form-input" id="skillTags" placeholder="custom, utility, api">
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">📄 SKILL.md 内容 *</div>
+                        <div class="form-group">
+                            <textarea class="form-textarea" id="skillMdContent" placeholder="---&#10;name: my-custom-skill&#10;description: A custom skill&#10;---&#10;&#10;# My Custom Skill" required></textarea>
+                        </div>
+                    </div>
+                    <div class="form-section">
+                        <div class="form-section-title">🐍 Python 脚本</div>
+                        <div class="script-list" id="scriptList"></div>
+                        <button type="button" class="btn btn-secondary" onclick="addScriptField()" style="margin-top: 12px;">➕ 添加脚本</button>
+                    </div>
+                    <div class="validation-results" id="validationResults"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeSkillModal()">取消</button>
+                <button type="button" class="btn btn-secondary" onclick="validateSkill()">🔍 验证</button>
+                <button type="button" class="btn btn-primary" onclick="installSkill()">💾 安装 Skill</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 确认删除对话框 -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-body">
+                <div class="confirm-dialog">
+                    <div class="confirm-icon">⚠️</div>
+                    <div class="confirm-title">确认删除</div>
+                    <div class="confirm-message" id="confirmMessage">确定要删除这个 Skill 吗？此操作不可恢复。</div>
+                    <div class="confirm-actions">
+                        <button class="btn btn-secondary" onclick="closeConfirmModal()">取消</button>
+                        <button class="btn btn-danger" id="confirmDeleteBtn">删除</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 查看 Skill 详情 Modal -->
+    <div class="modal-overlay" id="viewModal">
+        <div class="modal" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2 class="modal-title" id="viewModalTitle">Skill 详情</h2>
+                <button class="modal-close" onclick="closeViewModal()">×</button>
+            </div>
+            <div class="modal-body" id="viewModalBody"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="exportCurrentSkill()">📤 导出</button>
+                <button class="btn btn-secondary" onclick="editCurrentSkill()">✏️ 编辑</button>
+                <button class="btn btn-danger" onclick="deleteCurrentSkill()">🗑️ 删除</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>

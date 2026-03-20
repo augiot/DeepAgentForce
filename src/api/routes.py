@@ -294,6 +294,31 @@ async def get_session_detail(session_id: str, request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@router.delete("/history/session/{session_id}", tags=["对话历史"])
+async def delete_session(session_id: str, request: Request):
+    """
+    删除指定会话
+    """
+    engine = request.app.state.engine
+    try:
+        # 从内存中移除（如果存在）
+        if session_id in engine.sessions:
+            del engine.sessions[session_id]
+
+        # 从磁盘删除
+        success = engine.history_manager.delete_session(session_id)
+
+        if success:
+            return {"success": True, "message": "会话已删除"}
+        else:
+            raise HTTPException(status_code=404, detail="会话不存在")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"删除会话失败: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @router.get("/history/{session_id}", response_model=HistoryResponse, tags=["对话历史"])
 async def get_history(request: Request, session_id: str):
     """获取内存中的对话历史"""
@@ -455,10 +480,9 @@ async def get_person_like(request: Request):
 @router.get("/server_info")
 async def get_server_info(request: Request):
     """获取服务器信息，供前端动态配置API地址"""
-    return {
-        "api_base": str(request.base_url).rstrip("/"),
-        "ws_base": str(request.base_url).replace("http", "ws").rstrip("/") + "/ws/stream"
-    }
+    engine = request.app.state.engine
+    # 返回完整的服务器信息
+    return engine.settings.server_info
     
 
 

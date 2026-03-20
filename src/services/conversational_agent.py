@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from typing import List, Dict, Optional, Any
 from deepagents import create_deep_agent
@@ -10,7 +9,7 @@ from langchain_community.tools import ShellTool
 from langchain_core.messages import HumanMessage, AIMessage, ToolMessage
 from src.services.person_like_service import UserPreferenceMining
 from src.workflow.callbacks import StatusCallback
-from config.settings import Settings
+from config.settings import get_settings
 
 logger = logging.getLogger(__name__)
 
@@ -38,7 +37,7 @@ class ConversationalAgent():
         构建 Deep Agent 实例
         """
         if not self.settings.LLM_MODEL:
-            self.settings=Settings()
+            self.settings = get_settings()
 
 
         # 1. 初始化模型
@@ -52,12 +51,19 @@ class ConversationalAgent():
         self.exec_tool = ShellTool()
         self.exec_tool.name = "shell"
         self.exec_tool.description = (
-            f"Run python scripts. ALL commands must be relative to: {self.workspace}. "
+            f"运行 Python 脚本。ALL 命令必须相对于: {self.workspace}。 "
             "DO NOT use absolute paths. DO NOT use 'cd' or 'ls'."
+            "\n\n【关键】当需要执行 SKILL 技能时，必须严格遵循 SKILL.md 文件中 Execution 部分指定的命令格式。"
+            "\n【关键】查看 SKILL.md 后，执行对应 scripts/ 目录下的 .py 文件。"
         )
-        system_prompt = f"""你是一个精确执行的智能体，需要判断是否进行工具的调用，如果是闲聊，则直接回答用户的问题，如果是需要提供的技能，需要根据用户的问题来寻找一个合适的技能，并执行技能。 
-**技能目录**：你可以使用的技能目录是 {self.workspace}，不允许访问其他目录，自行进行工具的调用；不允许自行进行撰写文件进行执行。
-**用户**: 
+        system_prompt = f"""你是一个精确执行的智能体，需要判断是否进行工具的调用，如果是闲聊，则直接回答用户的问题，如果是需要提供的技能，需要根据用户的问题来寻找一个合适的技能，并执行技能。
+**【关键规则】技能执行必须严格遵循 SKILL.md 中的命令格式！**
+1. 首先读取对应技能的 SKILL.md 文件
+2. 严格按照 SKILL.md 中 Execution 部分的命令格式执行
+3. 不得自行添加、删除或修改命令参数
+4. 特别注意：区分位置参数（positional）和选项参数（--flag）
+**技能目录**：你可以使用的技能目录是 {self.workspace}，不允许访问其他目录。
+**用户**:
 # 👤 用户上下文
 {self.user_summary}
 """

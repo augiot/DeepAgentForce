@@ -99,6 +99,16 @@ def setup_websocket_routes(app: FastAPI):
                 message = data.get("message", "")
                 if not message: continue
                 
+                # 🆕 从请求体获取 session_id（前端在 JSON 中发送）
+                incoming_sid = data.get("session_id")
+                if incoming_sid and incoming_sid != session_id:
+                    # 前端指定了 session_id，切换会话
+                    session_id = incoming_sid
+                    session_id, agent = engine.get_or_create_session(
+                        session_id=session_id,
+                        status_callback=status_callback
+                    )
+                
                 # 🆕 重置思考过程列表（每次新对话开始时清空）
                 current_thinking_steps = []
                 
@@ -119,8 +129,8 @@ def setup_websocket_routes(app: FastAPI):
                     metadata={"source": "websocket"}
                 )
                 
-                # 发送结束信号
-                await ws_callback("done", {"message": response})
+                # 🆕 发送结束信号（包含 session_id）
+                await ws_callback("done", {"message": response, "session_id": session_id})
         
         except WebSocketDisconnect:
             logger.info(f"客户端断开连接: {session_id}")
@@ -151,27 +161,38 @@ class ConversationHistoryManager:
         session_file = self._get_session_file_path(session_id)
         if session_file.exists():
             return session_id
-            
+
         session_data = {
             "session_id": session_id,
+            "title": "新对话",  # 初始标题，后续会更新
             "created_at": datetime.now().isoformat(),
             "conversations": []
         }
         with open(session_file, 'w', encoding='utf-8') as f:
             json.dump(session_data, f, ensure_ascii=False, indent=2)
         return session_id
+
+    def _generate_title(self, user_message: str) -> str:
+        """根据用户消息生成标题摘要"""
+        if not user_message:
+            return "新对话"
+        # 移除换行符，取前30个字符
+        clean_msg = user_message.replace('\n', ' ').strip()
+        if len(clean_msg) > 30:
+            return clean_msg[:30] + '...'
+        return clean_msg
     
     def add_conversation(
-        self, 
-        session_id: str, 
-        user_message: str, 
-        ai_response: str, 
+        self,
+        session_id: str,
+        user_message: str,
+        ai_response: str,
         thinking_steps: Optional[list] = None,  # 🆕 新增参数
         metadata: Optional[dict] = None
     ):
         """
         添加对话记录，包含思考过程
-        
+
         Args:
             session_id: 会话ID
             user_message: 用户消息
@@ -182,27 +203,31 @@ class ConversationHistoryManager:
         session_file = self._get_session_file_path(session_id)
         if not session_file.exists():
             self.create_session(session_id)
-        
+
         with open(session_file, 'r', encoding='utf-8') as f:
             session_data = json.load(f)
-        
+
         conversation = {
             "id": str(uuid.uuid4()),
             "timestamp": datetime.now().isoformat(),
             "user_content": user_message,
             "ai_content": ai_response
         }
-        
+
         # 🆕 添加思考过程
         if thinking_steps:
             conversation["thinking_steps"] = thinking_steps
-        
+
         if metadata:
             conversation["metadata"] = metadata
-        
+
         session_data["conversations"].append(conversation)
         session_data["updated_at"] = datetime.now().isoformat()
-        
+
+        # 🆕 如果是第一条用户消息，更新会话标题
+        if len(session_data["conversations"]) == 1:
+            session_data["title"] = self._generate_title(user_message)
+
         with open(session_file, 'w', encoding='utf-8') as f:
             json.dump(session_data, f, ensure_ascii=False, indent=2)
     
@@ -221,6 +246,7 @@ class ConversationHistoryManager:
                     data = json.load(f)
                     sessions.append({
                         "session_id": data["session_id"],
+                        "title": data.get("title", "历史对话"),  # 🆕 返回标题
                         "created_at": data.get("created_at"),
                         "updated_at": data.get("updated_at"),
                         "conversation_count": len(data.get("conversations", [])),
@@ -229,3 +255,24 @@ class ConversationHistoryManager:
             except Exception as e:
                 logger.error(f"Failed to read session {session_file}: {e}")
         return sorted(sessions, key=lambda x: x.get("updated_at", ""), reverse=True)
+
+    def delete_session(self, session_id: str) -> bool:
+        """
+        删除指定会话
+
+        Args:
+            session_id: 要删除的会话ID
+
+        Returns:
+            True 表示删除成功，False 表示会话不存在或删除失败
+        """
+        session_file = self._get_session_file_path(session_id)
+        if session_file.exists():
+            try:
+                session_file.unlink()
+                logger.info(f"已删除会话: {session_id}")
+                return True
+            except Exception as e:
+                logger.error(f"删除会话失败 {session_id}: {e}")
+                return False
+        return False

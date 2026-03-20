@@ -24,7 +24,20 @@ Use this tool exclusively to retrieve information regarding **company policies**
 ---
 
 ## 🚀 Execution
-Execute the query via the following command:
 
+**⚠️ 重要：必须严格遵循以下命令格式，不得自行添加、删除或修改参数！**
+
+执行 RAG 查询的命令格式：
 ```bash
-python src/services/skills/rag-query/scripts/query.py "<Internal_Policy_or_Company_Query>"
+python /Users/tianwei/paper/DeepAgentForce/src/services/skills/rag-query/scripts/query.py "<要查询的问题>"
+```
+
+**示例：**
+- ✅ 正确：`python /Users/tianwei/paper/DeepAgentForce/src/services/skills/rag-query/scripts/query.py "公司的考勤制度是什么"`
+- ❌ 错误：`python src/services/skills/rag-query/scripts/query.py "公司的考勤制度"`
+- ❌ 错误：`python rag-query/scripts/query.py "公司的考勤制度"`
+
+**注意：**
+- 必须使用**完整绝对路径**（以 `/Users/tianwei/paper/DeepAgentForce/` 开头）
+- `question` 是**位置参数**（positional argument），不是 `--question` 或 `--query`
+- 必须用**双引号**将问题包裹

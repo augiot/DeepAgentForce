@@ -1,19 +1,38 @@
-
+import os
 import sys
 import json
 import argparse
 import httpx
+# 添加config路径
+ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../../../.."))
+sys.path.insert(0, ROOT)
+from config import settings
 
 # RAG 接口地址
-RAG_ENDPOINT = "http://localhost:8000/api/rag/query"
+RAG_ENDPOINT = settings.RAG_API_URL
 
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Query RAG knowledge base")
+
+    # 位置参数（主要参数）
     parser.add_argument(
-        "question",
+        "question_positional",
         type=str,
-        help="Question to ask the RAG system"
+        nargs="?",
+        help="Question to ask the RAG system (positional argument)"
+    )
+
+    # 兼容旧格式的参数
+    parser.add_argument(
+        "--query",
+        type=str,
+        help="Query parameter (alternative to positional question)"
+    )
+    parser.add_argument(
+        "--question",
+        type=str,
+        help="Question parameter (alternative to positional question)"
     )
     parser.add_argument(
         "--top-k",
@@ -21,7 +40,23 @@ def parse_args():
         default=10,
         help="Number of top communities to retrieve"
     )
-    return parser.parse_args()
+
+    args = parser.parse_args()
+
+    # 优先级：positional > --question > --query
+    if args.question_positional:
+        final_question = args.question_positional
+    elif args.question:
+        final_question = args.question
+    elif args.query:
+        final_question = args.query
+    else:
+        final_question = None
+
+    return argparse.Namespace(
+        question=final_question,
+        top_k=args.top_k
+    )
 
 
 def query_rag(question: str, top_k: int = 10) -> dict:
@@ -43,6 +78,14 @@ def query_rag(question: str, top_k: int = 10) -> dict:
 
 def main():
     args = parse_args()
+
+    # 检查问题是否提供
+    if not args.question:
+        print("❌ Error: No question provided.")
+        print("Usage: python query.py \"Your question here\"")
+        print("   or: python query.py --query \"Your question here\"")
+        print("   or: python query.py --question \"Your question here\"")
+        sys.exit(1)
 
     try:
         result = query_rag(args.question, args.top_k)

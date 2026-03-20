@@ -187,16 +187,16 @@ async def validate_skill(
     try:
         # 解析 scripts
         scripts_dict = json.loads(scripts) if scripts else {}
-        
-        # 导入并使用验证功能
+
+        # 使用共享的配置
         from src.services.skill_manager import SkillManager
-        from config.settings import Settings
-        
-        settings = Settings()
+        from config.settings import get_settings
+
+        settings = get_settings()
         skill_manager = SkillManager(settings.SKILL_DIR)
-        
+
         validation = skill_manager.validate_skill(skill_md, scripts_dict)
-        
+
         return SkillValidationResponse(**validation)
     except json.JSONDecodeError as e:
         return SkillValidationResponse(

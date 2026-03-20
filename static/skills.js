@@ -3,9 +3,13 @@
  * 处理 Skill 的增删改查、导入导出等功能
  */
 
-// 自动获取当前服务器的 API 地址 (使用全局函数)
-const API_URL = window.getApiBase ? window.getApiBase() : `${window.location.protocol}//${window.location.hostname}:8000/api`;
-console.log('📡 Skills API URL:', API_URL);
+// 使用全局函数动态获取 API 地址（避免函数名冲突）
+function getSkillApiUrl() {
+    if (window.getApiUrl) {
+        return window.getApiUrl();
+    }
+    return `${window.location.protocol}//${window.location.hostname}:8000/api`;
+}
 
 // 全局变量
 let skills = [];
@@ -15,16 +19,17 @@ let isEditMode = false;
 
 // ==================== 初始化 ====================
 
-document.addEventListener('DOMContentLoaded', async () => {
-    console.log('🚀 Skill 页面加载中...');
-    await loadSkills();
-    console.log('✅ Skill 页面加载完成');
-});
+// 不要在这里自动加载，让 index.html 导航逻辑控制
+// document.addEventListener('DOMContentLoaded', async () => {
+//     console.log('🚀 Skill 页面加载中...');
+//     await loadSkills();
+//     console.log('✅ Skill 页面加载完成');
+// });
 
 async function loadSkills() {
     try {
         console.log('📡 正在请求 Skills API...');
-        const response = await fetch(`${API_URL}/skills`);
+        const response = await fetch(`${getSkillApiUrl()}/skills`);
         console.log('📬 响应状态:', response.status);
         
         const data = await response.json();
@@ -49,8 +54,11 @@ function updateStats() {
     const total = skills.length;
     const totalScripts = skills.reduce((sum, s) => sum + (s.script_count || 0), 0);
 
-    document.getElementById('statTotal').textContent = total;
-    document.getElementById('statScripts').textContent = totalScripts;
+    const statTotalEl = document.getElementById('statTotal');
+    const statScriptsEl = document.getElementById('statScripts');
+
+    if (statTotalEl) statTotalEl.textContent = total;
+    if (statScriptsEl) statScriptsEl.textContent = totalScripts;
 }
 
 // ==================== 渲染 Skills ====================
@@ -172,6 +180,18 @@ function openSkillModal(skillId = null) {
         addScriptField();
     }
 
+    // 强制设置白色背景
+    const modalInner = modal.querySelector('.modal');
+    if (modalInner) {
+        modalInner.style.backgroundColor = '#ffffff';
+        const header = modalInner.querySelector('.modal-header');
+        const body = modalInner.querySelector('.modal-body');
+        const footer = modalInner.querySelector('.modal-footer');
+        if (header) header.style.backgroundColor = '#ffffff';
+        if (body) body.style.backgroundColor = '#ffffff';
+        if (footer) footer.style.backgroundColor = '#ffffff';
+    }
+
     modal.classList.add('active');
 }
 
@@ -191,7 +211,7 @@ async function loadSkillForEdit(skill) {
 
     // 加载 SKILL.md 内容
     try {
-        const response = await fetch(`${API_URL}/skills/${skill.id}/content`);
+        const response = await fetch(`${getSkillApiUrl()}/skills/${skill.id}/content`);
         const data = await response.json();
 
         if (data.success) {
@@ -277,7 +297,7 @@ async function validateSkill() {
         formData.append('skill_md', skillMdContent);
         formData.append('scripts', JSON.stringify(scripts));
 
-        const response = await fetch(`${API_URL}/skills/validate`, {
+        const response = await fetch(`${getSkillApiUrl()}/skills/validate`, {
             method: 'POST',
             body: formData
         });
@@ -345,7 +365,7 @@ async function installSkill() {
         formData.append('scripts', JSON.stringify(scripts));
         formData.append('force', isEditMode ? 'true' : 'false');
 
-        const response = await fetch(`${API_URL}/skills/install`, {
+        const response = await fetch(`${getSkillApiUrl()}/skills/install`, {
             method: 'POST',
             body: formData
         });
@@ -374,7 +394,7 @@ async function viewSkill(skillId) {
     currentSkillId = skillId;
 
     try {
-        const response = await fetch(`${API_URL}/skills/${skillId}/content`);
+        const response = await fetch(`${getSkillApiUrl()}/skills/${skillId}/content`);
         const data = await response.json();
 
         if (data.success) {
@@ -456,6 +476,17 @@ function openViewModal(skillId, data) {
         ${scriptsHtml}
     `;
 
+    // 强制设置白色背景
+    const modalInner = modal.querySelector('.modal');
+    if (modalInner) {
+        modalInner.style.backgroundColor = '#ffffff';
+        const header = modalInner.querySelector('.modal-header');
+        const footer = modalInner.querySelector('.modal-footer');
+        if (header) header.style.backgroundColor = '#ffffff';
+        if (footer) footer.style.backgroundColor = '#ffffff';
+    }
+    body.style.backgroundColor = '#ffffff';
+
     modal.classList.add('active');
 }
 
@@ -476,7 +507,7 @@ async function exportCurrentSkill() {
     if (!currentSkillId) return;
 
     try {
-        const response = await fetch(`${API_URL}/skills/${currentSkillId}/export`);
+        const response = await fetch(`${getSkillApiUrl()}/skills/${currentSkillId}/export`);
         const data = await response.json();
 
         if (data.success) {
@@ -515,6 +546,14 @@ function confirmDelete(skillId) {
 
     document.getElementById('confirmDeleteBtn').onclick = () => deleteSkill(skillId);
 
+    // 强制设置白色背景
+    const modalInner = modal.querySelector('.modal');
+    if (modalInner) {
+        modalInner.style.backgroundColor = '#ffffff';
+        const body = modalInner.querySelector('.modal-body');
+        if (body) body.style.backgroundColor = '#ffffff';
+    }
+
     modal.classList.add('active');
 }
 
@@ -526,7 +565,7 @@ function closeConfirmModal() {
 
 async function deleteSkill(skillId) {
     try {
-        const response = await fetch(`${API_URL}/skills/${skillId}`, {
+        const response = await fetch(`${getSkillApiUrl()}/skills/${skillId}`, {
             method: 'DELETE'
         });
 

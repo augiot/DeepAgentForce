@@ -1,214 +1,225 @@
 /**
  * 配置管理模块
- * 负责加载、保存和验证模型配置
- * 适配扁平化配置结构 (无嵌套组)
+ * 统一管理前后端地址配置
+ * 配置来源优先级：
+ * 1. URL 参数 ?api=xxx
+ * 2. 后端 /api/server_info 接口
+ * 3. 本地默认配置
  */
 
-// 动态获取后端地址
-// 策略：1. 先尝试从 ?api= 参数获取
-//       2. 如果没有参数，页面加载时自动从当前域名请求 server_info 接口获取
-//       3. 如果 server_info 失败，则使用当前域名作为 API 地址
+// ==================== 本地默认配置 ====================
+const DEFAULT_CONFIG = {
+    API_HOST: '127.0.0.1',
+    API_PORT: 8000,
+    FRONTEND_HOST: '127.0.0.1',
+    FRONTEND_PORT: 8080,
+};
 
-let _serverInfo = null;
+// ==================== 全局配置对象 ====================
+const CONFIG = {
+    ...DEFAULT_CONFIG,
+    _initialized: false,
+    _apiBase: null,
+    _wsBase: null,
+};
 
-// 页面加载时自动获取服务器信息
-async function initServerInfo() {
+// ==================== 配置获取函数 ====================
+
+/**
+ * 从 URL 参数或本地存储获取 API 地址
+ */
+function getApiBase() {
+    // 1. 优先使用 URL 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiParam = urlParams.get('api');
+    if (apiParam) {
+        return apiParam.replace(/\/$/, ''); // 去除末尾斜杠
+    }
+
+    // 2. 返回缓存的 API 地址
+    if (CONFIG._apiBase) {
+        return CONFIG._apiBase;
+    }
+
+    // 3. 返回默认地址（不含 /api，由各路由自行添加）
+    return `http://${CONFIG.API_HOST}:${CONFIG.API_PORT}`;
+}
+
+/**
+ * 获取 WebSocket 地址
+ */
+function getWsBase() {
+    // 1. 优先使用 URL 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiParam = urlParams.get('api');
+    if (apiParam) {
+        return apiParam.replace(/\/$/, '') + '/ws/stream';
+    }
+
+    // 2. 返回缓存的 WS 地址
+    if (CONFIG._wsBase) {
+        return CONFIG._wsBase;
+    }
+
+    // 3. 返回默认地址
+    return `ws://${CONFIG.API_HOST}:${CONFIG.API_PORT}/ws/stream`;
+}
+
+/**
+ * 获取完整的 API URL
+ */
+function getApiUrl() {
+    // 1. 优先使用 URL 参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const apiParam = urlParams.get('api');
+    if (apiParam) {
+        return apiParam.replace(/\/$/, ''); // 去除末尾斜杠
+    }
+
+    // 2. 返回缓存的 API 地址
+    if (CONFIG._apiBase) {
+        return CONFIG._apiBase;
+    }
+
+    // 3. 返回默认地址（始终包含 /api，与后端 server_info 保持一致）
+    return `http://${CONFIG.API_HOST}:${CONFIG.API_PORT}/api`;
+}
+
+/**
+ * 获取 WebSocket URL
+ */
+function getWsUrl() {
+    return getWsBase();
+}
+
+// ==================== 服务器信息同步 ====================
+
+/**
+ * 从后端获取服务器配置并更新本地配置
+ */
+async function syncServerConfig() {
     try {
-        const currentBase = `${window.location.protocol}//${window.location.host}`;
-        const response = await fetch(`${currentBase}/api/server_info`, {
-            signal: AbortSignal.timeout(3000)
-        });
-        if (response.ok) {
-            _serverInfo = await response.json();
-            console.log('✅ 获取到服务器信息:', _serverInfo);
+        // 先用默认地址尝试获取
+        const defaultUrl = `http://${DEFAULT_CONFIG.API_HOST}:${DEFAULT_CONFIG.API_PORT}/api`;
+        const response = await fetch(`${defaultUrl}/server_info`);
+
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
         }
-    } catch (e) {
-        console.warn('⚠️ 无法获取 server_info，使用默认配置:', e.message);
+
+        const serverInfo = await response.json();
+
+        // 更新配置
+        CONFIG.API_HOST = serverInfo.host || DEFAULT_CONFIG.API_HOST;
+        CONFIG.API_PORT = serverInfo.port || DEFAULT_CONFIG.API_PORT;
+        CONFIG._apiBase = serverInfo.api_base || `${defaultUrl}`;
+        CONFIG._wsBase = serverInfo.ws_base || `ws://${DEFAULT_CONFIG.API_HOST}:${DEFAULT_CONFIG.API_PORT}/ws/stream`;
+        CONFIG.FRONTEND_HOST = serverInfo.frontend_host || DEFAULT_CONFIG.FRONTEND_HOST;
+        CONFIG.FRONTEND_PORT = serverInfo.frontend_port || DEFAULT_CONFIG.FRONTEND_PORT;
+        CONFIG._initialized = true;
+
+        console.log('✅ 服务器配置同步成功:', {
+            api_base: CONFIG._apiBase,
+            ws_base: CONFIG._wsBase,
+            frontend_base: serverInfo.frontend_base
+        });
+
+        return true;
+    } catch (error) {
+        console.warn('⚠️ 无法获取服务器配置，使用默认配置:', error.message);
+        return false;
     }
 }
 
-// 同步版本 - 优先使用 URL 参数，否则使用已获取的 server_info
-const getApiBase = () => {
-    // 优先使用 URL 参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const apiParam = urlParams.get('api');
-    if (apiParam) return apiParam;
-    
-    // 使用 server_info
-    if (_serverInfo && _serverInfo.api_base) return _serverInfo.api_base;
-    
-    // 回退：假设后端在当前服务器的 8000 端口
-    return `${window.location.protocol}//${window.location.hostname}:8000/api`;
-};
+// ==================== 配置加载/保存 ====================
 
-const getWsBase = () => {
-    // 优先使用 URL 参数
-    const urlParams = new URLSearchParams(window.location.search);
-    const apiParam = urlParams.get('api');
-    if (apiParam) return apiParam.replace('/api', '') + '/ws/stream';
-    
-    // 使用 server_info
-    if (_serverInfo && _serverInfo.ws_base) return _serverInfo.ws_base;
-    
-    // 回退：假设后端在当前服务器的 8000 端口
-    return `ws://${window.location.hostname}:8000/ws/stream`;
-};
+async function loadConfig() {
+    try {
+        const response = await fetch(`${getApiUrl()}/config`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        return data.success && data.config ? data.config : {};
+    } catch (e) {
+        console.error('加载配置失败:', e);
+        return null;
+    }
+}
 
-// 页面加载时自动获取 server_info
-initServerInfo();
+async function saveConfig(formData) {
+    try {
+        const response = await fetch(`${getApiUrl()}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(formData)
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return await response.json();
+    } catch (e) {
+        console.error('保存配置失败:', e);
+        throw e;
+    }
+}
 
-// 暴露给全局
-window.getApiBase = getApiBase;
-window.getWsBase = getWsBase;
+// ==================== UI 绑定 ====================
 
-// DOM ID 到 配置文件 Key 的映射
-// 格式: { HTML元素ID : 后端配置Key }
 const FIELD_MAPPING = {
-    // LLM 配置
     'llmApiKey': 'LLM_API_KEY',
     'llmUrl': 'LLM_URL',
     'llmModel': 'LLM_MODEL',
-    
-    // 搜索配置
     'tavilyApiKey': 'TAVILY_API_KEY',
-    
-    // Firecrawl 配置
     'firecrawlApiKey': 'FIRECRAWL_API_KEY',
     'firecrawlUrl': 'FIRECRAWL_URL',
-    
-    // Embedding 配置
     'embeddingApiKey': 'EMBEDDING_API_KEY',
     'embeddingUrl': 'EMBEDDING_URL',
     'embeddingModel': 'EMBEDDING_MODEL'
 };
 
-// ==================== 工具函数 ====================
-
-// 安全调用全局 Toast
-function safeShowToast(message, type) {
-    if (typeof window.showToast === 'function') {
-        window.showToast(message, type);
-    } else {
-        console.log(`[${type}] ${message}`);
-        // 如果没有全局 toast，可以使用简单的 alert 作为回退，或者什么都不做
-        if (type === 'error') alert(message);
-    }
-}
-
-// ==================== 加载配置 ====================
-
-async function loadConfig() {
-    try {
-        const response = await fetch(`${window.getApiBase()}/config`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        
-        // 确保 data.config 存在
-        if (!data.success || !data.config) {
-            console.log('⚠️ 未找到有效配置或配置为空');
-            return;
-        }
-
-        const config = data.config; // 扁平化对象
-
-        // 遍历映射表填充数据
-        for (const [domId, configKey] of Object.entries(FIELD_MAPPING)) {
-            const element = document.getElementById(domId);
-            if (element) {
-                // 如果配置中有值则填充，否则保持原样或清空
-                element.value = config[configKey] || '';
-            }
-        }
-        
-        console.log('✅ 配置加载完成');
-    } catch (error) {
-        console.error('❌ 加载配置失败:', error);
-        safeShowToast('加载配置失败，请检查后端服务', 'error');
-    }
-}
-
-// ==================== 保存配置 ====================
-
-async function saveConfig() {
-    const saveButton = document.getElementById('saveConfigBtn');
-    if (saveButton) {
-        saveButton.disabled = true;
-        saveButton.textContent = '保存中...';
-    }
-    
-    try {
-        // 1. 收集数据
-        const configToSave = {};
-        for (const [domId, configKey] of Object.entries(FIELD_MAPPING)) {
-            const element = document.getElementById(domId);
-            if (element && element.value.trim() !== '') {
-                configToSave[configKey] = element.value.trim();
-            }
-        }
-        
-        // 2. 验证必填项 (根据需求调整)
-        const requiredKeys = ['LLM_API_KEY', 'LLM_URL', 'LLM_MODEL'];
-        const missing = requiredKeys.filter(key => !configToSave[key]);
-        
-        if (missing.length > 0) {
-            throw new Error(`缺少必填项: ${missing.join(', ')}`);
-        }
-        
-        // 3. 发送请求
-        const response = await fetch(`${window.getApiBase()}/config`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(configToSave)
-        });
-        
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(errorData.detail || '保存请求失败');
-        }
-        
-        const result = await response.json();
-        
-        safeShowToast('配置已保存！新的对话将使用新配置', 'success');
-        console.log('✅ 保存成功:', result);
-        
-    } catch (error) {
-        console.error('❌ 保存配置失败:', error);
-        safeShowToast(error.message, 'error');
-    } finally {
-        if (saveButton) {
-            saveButton.disabled = false;
-            saveButton.textContent = '保存配置';
+async function populateConfigFields() {
+    const config = await loadConfig();
+    if (!config) return;
+    for (const [elementId, configKey] of Object.entries(FIELD_MAPPING)) {
+        const element = document.getElementById(elementId);
+        if (element && config[configKey]) {
+            element.value = config[configKey];
         }
     }
 }
 
-// ==================== 初始化 ====================
-
-function initConfigPage() {
-    // 绑定保存按钮
-    const saveButton = document.getElementById('saveConfigBtn');
-    if (saveButton) {
-        // 移除旧的监听器（防止重复绑定，虽然后面是直接执行，但习惯上要注意）
-        saveButton.removeEventListener('click', saveConfig);
-        saveButton.addEventListener('click', saveConfig);
+async function saveConfigFromForm() {
+    const formData = {};
+    for (const [elementId, configKey] of Object.entries(FIELD_MAPPING)) {
+        const element = document.getElementById(elementId);
+        if (element) {
+            formData[configKey] = element.value;
+        }
     }
-    
-    // 加载数据
-    loadConfig();
+    return await saveConfig(formData);
 }
 
-// 确保 DOM 加载完毕后执行
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initConfigPage);
-} else {
-    initConfigPage();
-}
+// ==================== 暴露全局函数 ====================
 
-// 暴露给全局 (方便控制台调试或 HTML onclick 调用)
+// 基础 URL 函数
+window.getApiBase = getApiBase;
+window.getWsBase = getWsBase;
+window.getApiUrl = getApiUrl;
+window.getWsUrl = getWsUrl;
+
+// 配置管理函数
 window.loadConfig = loadConfig;
 window.saveConfig = saveConfig;
+window.populateConfigFields = populateConfigFields;
+window.saveConfigFromForm = saveConfigFromForm;
+window.syncServerConfig = syncServerConfig;
+
+// 导出配置对象供其他模块使用
+window.CONFIG = CONFIG;
+
+// 初始化：自动同步服务器配置
+(async function initConfig() {
+    await syncServerConfig();
+    console.log('✅ config.js 已加载');
+})();

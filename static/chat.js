@@ -1,12 +1,6 @@
 /**
- * 对话功能 JavaScript - 完整修复版
- * 修复：附件上传后历史记录不保存/不显示的问题
- * 修复：会话 ID 丢失导致创建新会话的问题
+ * 对话功能 JavaScript
  */
-
-// 自动获取当前服务器的 API 地址 (使用 config.js 中定义的全局函数)
-const API_URL = window.getApiBase();
-const WS_URL = window.getWsBase();
 
 // ============ 0. 全局变量定义 ============
 let ws = null;
@@ -17,82 +11,153 @@ let currentStreamingAnswer = null;
 let reconnectAttempts = 0;
 const MAX_RECONNECT_ATTEMPTS = 5;
 
-// 🔥 核心修复：定义全局 session ID
+// 核心变量：全局 session ID
 let currentSessionId = null;
 
-// 📎 文件上传相关变量
+// 文件上传相关变量
 let attachedFiles = [];
 
 // DOM 元素引用
-const messagesWrapper = document.getElementById('messagesWrapper');
-const messagesArea = document.getElementById('messagesArea');
-const welcomeScreen = document.getElementById('welcomeScreen');
-const messageInput = document.getElementById('messageInput');
-const sendButton = document.getElementById('sendButton');
-const attachButton = document.getElementById('attachButton');
-const chatFileInput = document.getElementById('chatFileInput');
-const fileAttachmentsContainer = document.getElementById('fileAttachments');
-const historyList = document.getElementById('historyList');
-const newChatBtn = document.getElementById('newChatBtn');
-const sidebarNewChatBtn = document.getElementById('sidebarNewChatBtn');
-const statusIndicator = document.getElementById('statusIndicator');
-const statusText = document.getElementById('statusText');
+let messagesWrapper, messagesArea, welcomeScreen, messageInput, sendButton;
+let attachButton, chatFileInput, fileAttachmentsContainer;
+let historyList, newChatBtn, sidebarNewChatBtn, statusIndicator, statusText;
 
-// ============ 1. 历史记录加载与管理 ============
+// ============ 1. DOM 初始化 ============
+function initDOM() {
+    messagesWrapper = document.getElementById('messagesWrapper');
+    messagesArea = document.getElementById('messagesArea');
+    welcomeScreen = document.getElementById('welcomeScreen');
+    messageInput = document.getElementById('messageInput');
+    sendButton = document.getElementById('sendButton');
+    attachButton = document.getElementById('attachButton');
+    chatFileInput = document.getElementById('chatFileInput');
+    fileAttachmentsContainer = document.getElementById('fileAttachments');
+    historyList = document.getElementById('historyList');
+    newChatBtn = document.getElementById('newChatBtn');
+    sidebarNewChatBtn = document.getElementById('sidebarNewChatBtn');
+    statusIndicator = document.getElementById('statusIndicator');
+    statusText = document.getElementById('statusText');
+}
 
+// ============ 2. 历史记录加载与管理 ============
 async function loadSavedHistory() {
     try {
         console.log("正在加载历史记录...");
-        const response = await fetch(`${API_URL}/history/saved`);
-        
+        const response = await fetch(`${getApiUrl()}/history/saved`);
+
         if (!response.ok) {
             console.warn("无法连接到历史记录接口");
             return;
         }
 
         const data = await response.json();
-        
+
         if (historyList) {
             historyList.innerHTML = '';
         }
 
         if (data.success && Array.isArray(data.sessions) && data.sessions.length > 0) {
-            const sortedSessions = [...data.sessions].sort((a, b) => 
+            const sortedSessions = [...data.sessions].sort((a, b) =>
                 new Date(b.updated_at) - new Date(a.updated_at)
             );
 
             sortedSessions.forEach((session) => {
                 const li = document.createElement('li');
                 li.className = 'history-item';
-                
-                // 高亮当前选中的会话
+                li.dataset.sessionId = session.session_id;  // 🆕 保存 session_id 用于查找
+
                 if (currentSessionId === session.session_id) {
-                    li.classList.add('active'); 
+                    li.classList.add('active');
                 }
 
+                // 🆕 优先使用后端返回的 title（已根据第一条用户消息生成）
                 let title = session.title || '新对话';
-                
-                if (title === '新对话' && session.conversation && session.conversation.length > 0) {
+
+                // 兼容旧数据：如果 title 仍是默认值，尝试从对话内容生成
+                if ((title === '新对话' || title === '历史对话') && session.conversation && session.conversation.length > 0) {
                     const firstMsg = session.conversation[0].user_content;
                     if (firstMsg) {
-                        title = firstMsg.length > 20 
-                            ? firstMsg.substring(0, 20) + '...' 
+                        title = firstMsg.length > 30
+                            ? firstMsg.substring(0, 30) + '...'
                             : firstMsg;
                     }
                 }
-                
-                li.textContent = title;
-                
+
+                // 创建标题容器
+                const titleContainer = document.createElement('div');
+                titleContainer.className = 'history-item-content';
+                titleContainer.style.display = 'flex';
+                titleContainer.style.alignItems = 'center';
+                titleContainer.style.justifyContent = 'space-between';
+                titleContainer.style.width = '100%';
+                titleContainer.style.gap = '8px';
+
+                // 标题文本
+                const titleSpan = document.createElement('span');
+                titleSpan.className = 'history-item-title';
+                titleSpan.textContent = title;
+                titleSpan.style.flex = '1';
+                titleSpan.style.overflow = 'hidden';
+                titleSpan.style.textOverflow = 'ellipsis';
+                titleSpan.style.whiteSpace = 'nowrap';
+                titleContainer.appendChild(titleSpan);
+
+                // 🆕 删除按钮
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'history-delete-btn';
+                deleteBtn.innerHTML = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+                deleteBtn.title = '删除会话';
+                deleteBtn.style.display = 'none';
+                deleteBtn.style.background = 'none';
+                deleteBtn.style.border = 'none';
+                deleteBtn.style.cursor = 'pointer';
+                deleteBtn.style.color = 'inherit';
+                deleteBtn.style.padding = '2px';
+                deleteBtn.style.borderRadius = '4px';
+                deleteBtn.style.transition = 'all 0.2s';
+
+                // 🆕 删除按钮悬停效果
+                deleteBtn.onmouseenter = () => {
+                    deleteBtn.style.background = 'rgba(255, 255, 255, 0.2)';
+                    deleteBtn.style.color = '#ff4d4f';
+                };
+                deleteBtn.onmouseleave = () => {
+                    deleteBtn.style.background = 'none';
+                    deleteBtn.style.color = 'inherit';
+                };
+
+                // 🆕 点击删除按钮
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    confirmDeleteSession(session.session_id, title);
+                };
+
+                titleContainer.appendChild(deleteBtn);
+                li.appendChild(titleContainer);
+
+                // 🆕 悬停时显示删除按钮
+                li.onmouseenter = () => {
+                    deleteBtn.style.display = 'flex';
+                };
+                li.onmouseleave = () => {
+                    deleteBtn.style.display = 'none';
+                };
+
+                // 🆕 保留原有的悬停样式（如果需要调整可以在这里修改）
                 const conversationInfo = document.createElement('span');
                 conversationInfo.className = 'conversation-info';
-                conversationInfo.textContent = ` (${session.conversation_count}条)`;
+                conversationInfo.textContent = `${session.conversation_count}条`;
                 conversationInfo.style.fontSize = '0.85em';
                 conversationInfo.style.color = '#999';
+                // 🆕 高亮状态下使用浅色文字
+                if (li.classList.contains('active')) {
+                    conversationInfo.style.color = 'rgba(255, 255, 255, 0.7)';
+                }
                 li.appendChild(conversationInfo);
-                
+
                 li.title = `${title}\n对话数: ${session.conversation_count}\n时间: ${new Date(session.updated_at).toLocaleString('zh-CN')}`;
                 li.onclick = () => restoreSession(session);
-                
+
                 historyList.appendChild(li);
             });
         } else {
@@ -109,32 +174,83 @@ async function loadSavedHistory() {
     }
 }
 
-/**
- * 🆕 恢复会话时显示完整内容（包括思考过程）
- */
+// 🆕 删除会话确认和执行
+async function confirmDeleteSession(sessionId, title) {
+    const confirmed = confirm(`确定要删除会话"${title}"吗？\n此操作不可恢复。`);
+    if (confirmed) {
+        await deleteSession(sessionId);
+    }
+}
+
+async function deleteSession(sessionId) {
+    try {
+        const response = await fetch(`${getApiUrl()}/history/session/${sessionId}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            console.log('会话已删除:', sessionId);
+
+            // 如果删除的是当前会话，重置UI
+            if (currentSessionId === sessionId) {
+                currentSessionId = null;
+                messagesWrapper.innerHTML = '';
+                messagesWrapper.appendChild(welcomeScreen);
+                welcomeScreen.style.display = 'flex';
+            }
+
+            // 重新加载历史列表
+            loadSavedHistory();
+
+            // 显示成功提示
+            if (window.showToast) {
+                window.showToast('会话已删除', 'success');
+            }
+        } else {
+            throw new Error('删除失败');
+        }
+    } catch (error) {
+        console.error('删除会话失败:', error);
+        if (window.showToast) {
+            window.showToast('删除会话失败', 'error');
+        } else {
+            alert('删除会话失败');
+        }
+    }
+}
+
 function restoreSession(session) {
-    // 🔥 核心修复：点击历史记录时，更新当前 Session ID
     currentSessionId = session.session_id;
     console.log("已恢复会话 ID:", currentSessionId);
 
-    // 重新加载列表以更新高亮状态
-    loadSavedHistory();
+    // 🆕 更新所有历史项的高亮状态
+    const allHistoryItems = document.querySelectorAll('.history-item');
+    allHistoryItems.forEach(item => {
+        if (item.dataset.sessionId === currentSessionId) {
+            item.classList.add('active');
+            // 🆕 高亮状态下更新子元素样式
+            const info = item.querySelector('.conversation-info');
+            if (info) info.style.color = 'rgba(255, 255, 255, 0.7)';
+        } else {
+            item.classList.remove('active');
+            // 🆕 移除高亮时恢复默认样式
+            const info = item.querySelector('.conversation-info');
+            if (info) info.style.color = '#999';
+        }
+    });
 
     resetChatUI();
 
     if (session.conversation && session.conversation.length > 0) {
         session.conversation.forEach(conv => {
-            // 1. 显示用户消息
             if (conv.user_content) {
                 addMessage('user', conv.user_content);
             }
-            
-            // 2. 🔥 显示思考过程（如果有）
+
             if (conv.thinking_steps && conv.thinking_steps.length > 0) {
                 renderThinkingSteps(conv.thinking_steps);
             }
-            
-            // 3. 显示 AI 回答
+
             if (conv.ai_content) {
                 addMessage('assistant', conv.ai_content);
             }
@@ -142,13 +258,9 @@ function restoreSession(session) {
     }
 }
 
-/**
- * 🆕 渲染历史记录中的思考过程
- */
 function renderThinkingSteps(steps) {
     if (!steps || steps.length === 0) return;
-    
-    // 创建思考容器
+
     const thinkingContainer = document.createElement('div');
     thinkingContainer.className = 'thinking-process';
     thinkingContainer.innerHTML = `
@@ -159,18 +271,17 @@ function renderThinkingSteps(steps) {
         </div>
         <div class="thinking-content"></div>
     `;
-    
+
     const stepsContainer = thinkingContainer.querySelector('.thinking-content');
-    
-    // 渲染每个步骤
+
     steps.forEach(step => {
         const stepDiv = document.createElement('div');
         stepDiv.className = `thinking-step ${getStepClass(step.step_type)}`;
-        
+
         const icon = getStepIcon(step.step_type);
         const title = step.title || '处理中';
         const description = step.description || '';
-        
+
         stepDiv.innerHTML = `
             <span class="step-icon">${icon}</span>
             <div class="step-content">
@@ -178,10 +289,10 @@ function renderThinkingSteps(steps) {
                 <div class="step-description">${description}</div>
             </div>
         `;
-        
+
         stepsContainer.appendChild(stepDiv);
     });
-    
+
     messagesWrapper.appendChild(thinkingContainer);
     scrollToBottom();
 }
@@ -196,17 +307,15 @@ function resetChatUI() {
 }
 
 function startNewChat() {
-    // 🔥 核心修复：开启新对话时，清空 ID
     currentSessionId = null;
     console.log("开启新会话，Session ID 已重置");
-    
-    // 刷新列表去除高亮
+
     loadSavedHistory();
 
     messagesWrapper.innerHTML = '';
     messagesWrapper.appendChild(welcomeScreen);
     welcomeScreen.style.display = 'flex';
-    
+
     currentThinkingContainer = null;
     currentStreamingAnswer = null;
     isProcessing = false;
@@ -215,14 +324,13 @@ function startNewChat() {
     clearAttachedFiles();
 }
 
-// ============ 2. WebSocket 连接管理 ============
-
+// ============ 3. WebSocket 连接管理 ============
 function connectWebSocket() {
     if (ws && (ws.readyState === WebSocket.CONNECTING || ws.readyState === WebSocket.OPEN)) {
         return;
     }
 
-    ws = new WebSocket(WS_URL);
+    ws = new WebSocket(getWsUrl());
 
     ws.onopen = () => {
         console.log('✅ WebSocket 连接成功');
@@ -245,7 +353,7 @@ function connectWebSocket() {
         console.log('🔌 WebSocket 连接关闭');
         isConnected = false;
         updateStatus(false);
-        
+
         if (reconnectAttempts < MAX_RECONNECT_ATTEMPTS) {
             reconnectAttempts++;
             const delay = Math.min(1000 * Math.pow(2, reconnectAttempts), 30000);
@@ -256,23 +364,22 @@ function connectWebSocket() {
 
 function handleWebSocketMessage(payload) {
     console.log('📨 收到 WebSocket 消息:', payload);
-    
+
     switch (payload.type) {
         case 'step':
             handleStepUpdate(payload);
             break;
-            
+
         case 'token':
             const token = payload.content || (payload.data ? payload.data.content : '');
             if (token) handleTokenUpdate(token);
             break;
-            
+
         case 'done':
-            const finalMsg = (payload.data && payload.data.message) 
-                ? payload.data.message 
+            const finalMsg = (payload.data && payload.data.message)
+                ? payload.data.message
                 : payload.message;
-            
-            // 如果后端 WebSocket 也返回了 session_id，这里也可以捕获
+
             if (payload.data && payload.data.session_id) {
                 currentSessionId = payload.data.session_id;
             }
@@ -280,7 +387,7 @@ function handleWebSocketMessage(payload) {
             console.log('✅ 提取到最终消息:', finalMsg);
             handleDone(finalMsg);
             break;
-            
+
         case 'error':
             const errMsg = payload.data ? payload.data.message : payload.message;
             handleError(errMsg);
@@ -300,15 +407,14 @@ function updateStatus(connected) {
     }
 }
 
-// ============ 3. 思考过程处理 ============
-
+// ============ 4. 思考过程处理 ============
 function handleStepUpdate(payload) {
     hideWelcomeScreen();
 
-    const stepData = payload.data || {}; 
+    const stepData = payload.data || {};
     const stepType = stepData.step || 'processing';
 
-    console.log("处理步骤更新:", stepType); 
+    console.log("处理步骤更新:", stepType);
 
     if (!currentThinkingContainer) {
         currentThinkingContainer = document.createElement('div');
@@ -325,22 +431,22 @@ function handleStepUpdate(payload) {
     }
 
     const stepsContainer = currentThinkingContainer.querySelector('.thinking-content');
-    
+
     const stepDiv = document.createElement('div');
     stepDiv.className = `thinking-step ${getStepClass(stepType)}`;
-    
-    const icon = getStepIcon(stepType); 
+
+    const icon = getStepIcon(stepType);
     const title = stepData.title || '处理中';
-    
+
     let description = stepData.description || '';
     if (typeof description === 'object') {
         try {
             description = JSON.stringify(description);
-        } catch(e) {
+        } catch (e) {
             description = "复杂数据";
         }
     }
-    
+
     stepDiv.innerHTML = `
         <span class="step-icon">${icon}</span>
         <div class="step-content">
@@ -348,33 +454,26 @@ function handleStepUpdate(payload) {
             <div class="step-description">${description}</div>
         </div>
     `;
-    
+
     stepsContainer.appendChild(stepDiv);
     scrollToBottom();
 }
 
 function getStepIcon(step) {
-    if (!step || typeof step !== 'string') {
-        return '⚙️';
-    }
-
+    if (!step || typeof step !== 'string') return '⚙️';
     const s = step.toLowerCase();
-    
-    if (s.includes('init') || s.includes('开始')) return '🤔';
-    if (s.includes('tool_start') || s.includes('调用')) return '🔧';
-    if (s.includes('tool_end') || s.includes('完成')) return '✅';
-    if (s.includes('finish') || s.includes('结束')) return '🎯';
-    if (s.includes('error')) return '❌';
-    
-    return '⚙️';
+
+    if (s.includes('init') || s.includes('开始')) return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>';
+    if (s.includes('tool_start') || s.includes('调用')) return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>';
+    if (s.includes('tool_end') || s.includes('完成')) return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+    if (s.includes('finish') || s.includes('结束')) return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>';
+    if (s.includes('error')) return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+
+    return '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
 }
 
 function getStepClass(step) {
-    if (!step || typeof step !== 'string') {
-        console.warn("getStepClass 接收到了无效参数:", step);
-        return '';
-    }
-    
+    if (!step || typeof step !== 'string') return '';
     const s = step.toLowerCase();
     if (s.includes('analyzing')) return 'analyzing';
     if (s.includes('plan')) return 'planning';
@@ -383,8 +482,7 @@ function getStepClass(step) {
     return '';
 }
 
-// ============ 4. 消息渲染与流式处理 ============
-
+// ============ 5. 消息渲染与流式处理 ============
 function hideWelcomeScreen() {
     if (welcomeScreen) {
         welcomeScreen.style.display = 'none';
@@ -393,20 +491,20 @@ function hideWelcomeScreen() {
 
 function addMessage(role, content) {
     hideWelcomeScreen();
-    
+
     const div = document.createElement('div');
     div.className = `message ${role}`;
-    
+
     const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-    
+
     let innerHTML = '';
-    
+
     if (role === 'user') {
         const textDiv = document.createElement('div');
         textDiv.textContent = content;
         innerHTML = `
             <div class="message-header">
-                <div class="message-avatar">👤</div>
+                <div class="message-avatar"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></div>
                 <div class="message-author">你</div>
                 <div class="message-time">${time}</div>
             </div>
@@ -416,14 +514,14 @@ function addMessage(role, content) {
         const parsed = typeof marked !== 'undefined' ? marked.parse(content) : content;
         innerHTML = `
             <div class="message-header">
-                <div class="message-avatar">🤖</div>
+                <div class="message-avatar"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a10 10 0 1 0 10 10H12V2z"/><path d="M12 2a10 10 0 0 1 10 10h-10V2z"/></svg></div>
                 <div class="message-author">AI 助手</div>
                 <div class="message-time">${time}</div>
             </div>
             <div class="message-content">${parsed}</div>
         `;
     }
-    
+
     div.innerHTML = innerHTML;
     messagesWrapper.appendChild(div);
     scrollToBottom();
@@ -434,7 +532,7 @@ function handleTokenUpdate(token) {
         currentStreamingAnswer = document.createElement('div');
         currentStreamingAnswer.className = 'message assistant';
         const time = new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
-        
+
         currentStreamingAnswer.innerHTML = `
             <div class="message-header">
                 <div class="message-avatar">🤖</div>
@@ -445,67 +543,65 @@ function handleTokenUpdate(token) {
         `;
         messagesWrapper.appendChild(currentStreamingAnswer);
     }
-    
+
     const contentDiv = currentStreamingAnswer.querySelector('.message-content');
     const currentRaw = contentDiv.dataset.raw || '';
     const newRaw = currentRaw + token;
     contentDiv.dataset.raw = newRaw;
-    
+
     if (typeof marked !== 'undefined') {
         contentDiv.innerHTML = marked.parse(newRaw);
     } else {
         contentDiv.textContent = newRaw;
     }
-    
+
     scrollToBottom();
 }
 
 function handleDone(finalMessage) {
     console.log('🏁 handleDone 执行,finalMessage:', finalMessage);
-    
+
     if (currentStreamingAnswer) {
         const contentDiv = currentStreamingAnswer.querySelector('.message-content');
         contentDiv.classList.remove('streaming');
         if (finalMessage) {
-             if (typeof marked !== 'undefined') {
+            if (typeof marked !== 'undefined') {
                 contentDiv.innerHTML = marked.parse(finalMessage);
             } else {
                 contentDiv.textContent = finalMessage;
             }
         }
-    } 
+    }
     else if (finalMessage) {
         console.log('📝 没有流式框,手动添加最终消息');
         addMessage('assistant', finalMessage);
     } else {
         console.warn('⚠️ handleDone 被调用但没有消息内容,也没有流式框');
     }
-    
+
     currentThinkingContainer = null;
     currentStreamingAnswer = null;
     isProcessing = false;
-    
+
     if (sendButton) sendButton.disabled = false;
     if (messageInput) {
         messageInput.disabled = false;
         messageInput.focus();
     }
-    
-    // 🔥 核心修复：每次完成对话后，刷新历史记录列表
+
     if (typeof loadSavedHistory === 'function') {
         loadSavedHistory();
     }
 }
 
 function handleError(msg) {
-    addMessage('assistant', `❌ 错误: ${msg}`);
+    addMessage('assistant', '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right: 8px;"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> 错误: ' + msg);
     isProcessing = false;
     if (sendButton) sendButton.disabled = false;
     if (messageInput) messageInput.disabled = false;
 }
 
-// ============ 5. 文件上传功能 ============
-
+// ============ 6. 文件上传功能 ============
 function formatFileSize(bytes) {
     if (bytes === 0) return '0 B';
     const k = 1024;
@@ -517,26 +613,26 @@ function formatFileSize(bytes) {
 function getFileIcon(filename) {
     const ext = filename.split('.').pop().toLowerCase();
     const iconMap = {
-        'pdf': '📄',
-        'doc': '📝',
-        'docx': '📝',
-        'txt': '📃',
-        'md': '📋',
-        'markdown': '📋',
-        'csv': '📊'
+        'pdf': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+        'doc': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
+        'docx': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>',
+        'txt': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+        'md': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>',
+        'markdown': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>',
+        'csv': '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/></svg>'
     };
-    return iconMap[ext] || '📎';
+    return iconMap[ext] || '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>';
 }
 
 function renderFileAttachments() {
     if (!fileAttachmentsContainer) return;
-    
+
     if (attachedFiles.length === 0) {
         fileAttachmentsContainer.innerHTML = '';
         fileAttachmentsContainer.style.display = 'none';
         return;
     }
-    
+
     fileAttachmentsContainer.style.display = 'flex';
     fileAttachmentsContainer.innerHTML = attachedFiles.map((file, index) => `
         <div class="file-attachment">
@@ -558,52 +654,10 @@ function clearAttachedFiles() {
     renderFileAttachments();
 }
 
-if (attachButton) {
-    attachButton.addEventListener('click', () => {
-        chatFileInput.click();
-    });
-}
-
-if (chatFileInput) {
-    chatFileInput.addEventListener('change', (e) => {
-        const files = Array.from(e.target.files);
-        
-        if (attachedFiles.length + files.length > 10) {
-            if (window.showToast) {
-                window.showToast('最多只能上传10个文件', 'error');
-            } else {
-                alert('最多只能上传10个文件');
-            }
-            chatFileInput.value = '';
-            return;
-        }
-        
-        const maxSize = 10 * 1024 * 1024;
-        for (let file of files) {
-            if (file.size > maxSize) {
-                if (window.showToast) {
-                    window.showToast(`文件 ${file.name} 超过10MB限制`, 'error');
-                } else {
-                    alert(`文件 ${file.name} 超过10MB限制`);
-                }
-                chatFileInput.value = '';
-                return;
-            }
-        }
-        
-        attachedFiles.push(...files);
-        renderFileAttachments();
-        chatFileInput.value = '';
-    });
-}
-
-window.removeAttachment = removeAttachment;
-
-// ============ 6. 发送与交互逻辑 ============
-
+// ============ 7. 发送与交互逻辑 ============
 async function sendMessage(text = null) {
     const message = text || messageInput.value.trim();
-    
+
     if ((!message && attachedFiles.length === 0) || !isConnected || isProcessing) {
         if (!isConnected && window.showToast) {
             window.showToast("未连接到服务器", "error");
@@ -612,87 +666,79 @@ async function sendMessage(text = null) {
     }
 
     if (attachedFiles.length > 0) {
-        // ============ 📁 场景1：带附件的上传 (使用 HTTP POST) ============
+        // 带附件的上传 (使用 HTTP POST)
         try {
             const formData = new FormData();
             formData.append('message', message);
 
-            // 🔥 核心修复：如果已存在会话，发送 session_id
             if (currentSessionId) {
                 formData.append('session_id', currentSessionId);
             }
-            
+
             attachedFiles.forEach((file, index) => {
                 formData.append('files', file);
             });
 
-            // 在 UI 上显示用户消息
             let userMessage = message;
             if (attachedFiles.length > 0) {
                 const fileNames = attachedFiles.map(f => f.name).join(', ');
                 userMessage += `\n\n📎 附件: ${fileNames}`;
             }
             addMessage('user', userMessage);
-            
-            // 锁定输入
+
             isProcessing = true;
             sendButton.disabled = true;
             messageInput.disabled = true;
 
-            const response = await fetch(`${API_URL}/chat/upload`, {
+            const response = await fetch(`${getApiUrl()}/chat/upload`, {
                 method: 'POST',
                 body: formData
             });
-            
+
             if (!response.ok) {
                 throw new Error('文件上传失败');
             }
-            
+
             const result = await response.json();
-            
+
             clearAttachedFiles();
             console.log("收到附件上传回复:", result);
 
-            // 🔥 核心修复：捕获后端返回的最新 session_id
             if (result.session_id) {
                 currentSessionId = result.session_id;
                 console.log("会话 ID 更新为:", currentSessionId);
             }
 
-            // 立刻刷新左侧历史记录
             loadSavedHistory();
 
-            // 显示 AI 回复
             if (result.message) {
-                handleDone(result.message); 
+                handleDone(result.message);
             } else {
-                // 如果后端没返回 message 字段，手动重置状态
                 isProcessing = false;
                 sendButton.disabled = false;
                 messageInput.disabled = false;
             }
-            
+
         } catch (error) {
             console.error('文件上传错误:', error);
             handleError('文件上传失败: ' + error.message);
         }
     } else {
-        // ============ 💬 场景2：普通对话 (使用 WebSocket) ============
+        // 普通对话 (使用 WebSocket)
         addMessage('user', message);
-        
-        // 构造发送对象，如果有会话 ID 则带上
+
         const payload = { message };
         if (currentSessionId) {
             payload.session_id = currentSessionId;
         }
-        
+
         ws.send(JSON.stringify(payload));
-        
+
         isProcessing = true;
         sendButton.disabled = true;
         messageInput.disabled = true;
     }
-    
+
     if (!text) {
         messageInput.value = '';
         messageInput.style.height = 'auto';
@@ -722,36 +768,79 @@ function attachQuickPromptListeners() {
     });
 }
 
-// ============ 7. 初始化绑定 ============
+// ============ 8. 初始化 ============
+document.addEventListener('DOMContentLoaded', () => {
+    initDOM();
 
-if (sendButton) sendButton.addEventListener('click', () => sendMessage());
+    if (sendButton) sendButton.addEventListener('click', () => sendMessage());
 
-if (messageInput) {
-    messageInput.addEventListener('input', autoResizeTextarea);
-    messageInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-}
-
-if (newChatBtn) newChatBtn.addEventListener('click', startNewChat);
-if (sidebarNewChatBtn) sidebarNewChatBtn.addEventListener('click', startNewChat);
-
-// 全局暴露 helper，方便 HTML 调用
-window.toggleThinking = function(header) {
-    const content = header.nextElementSibling;
-    const toggle = header.querySelector('.thinking-toggle');
-    if (content.style.display === 'none') {
-        content.style.display = 'block';
-        toggle.style.transform = 'rotate(0deg)';
-    } else {
-        content.style.display = 'none';
-        toggle.style.transform = 'rotate(-90deg)';
+    if (messageInput) {
+        messageInput.addEventListener('input', autoResizeTextarea);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
     }
-};
 
-attachQuickPromptListeners();
-connectWebSocket();
-loadSavedHistory();
+    if (newChatBtn) newChatBtn.addEventListener('click', startNewChat);
+    if (sidebarNewChatBtn) sidebarNewChatBtn.addEventListener('click', startNewChat);
+
+    if (attachButton) {
+        attachButton.addEventListener('click', () => {
+            chatFileInput.click();
+        });
+    }
+
+    if (chatFileInput) {
+        chatFileInput.addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+
+            if (attachedFiles.length + files.length > 10) {
+                if (window.showToast) {
+                    window.showToast('最多只能上传10个文件', 'error');
+                } else {
+                    alert('最多只能上传10个文件');
+                }
+                chatFileInput.value = '';
+                return;
+            }
+
+            const maxSize = 10 * 1024 * 1024;
+            for (let file of files) {
+                if (file.size > maxSize) {
+                    if (window.showToast) {
+                        window.showToast(`文件 ${file.name} 超过10MB限制`, 'error');
+                    } else {
+                        alert(`文件 ${file.name} 超过10MB限制`);
+                    }
+                    chatFileInput.value = '';
+                    return;
+                }
+            }
+
+            attachedFiles.push(...files);
+            renderFileAttachments();
+            chatFileInput.value = '';
+        });
+    }
+
+    window.toggleThinking = function(header) {
+        const content = header.nextElementSibling;
+        const toggle = header.querySelector('.thinking-toggle');
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            toggle.style.transform = 'rotate(0deg)';
+        } else {
+            content.style.display = 'none';
+            toggle.style.transform = 'rotate(-90deg)';
+        }
+    };
+
+    attachQuickPromptListeners();
+    connectWebSocket();
+    loadSavedHistory();
+
+    console.log('✅ chat.js 已加载');
+});

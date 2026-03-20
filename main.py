@@ -1,6 +1,8 @@
 import logging
 from fastapi import FastAPI
-from config.settings import Settings
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from config.settings import get_settings
 from fastapi.middleware.cors import CORSMiddleware
 from src.services.conversational_agent import ConversationalAgent
 from src.services.person_like_service import UserPreferenceMining
@@ -9,19 +11,39 @@ from src.services.skill_manager import SkillManager
 from src.api.websocket import ConversationHistoryManager, setup_websocket_routes
 from src.api.routes import router as api_router
 from src.api.skills_routes import router as skills_router
+import os
+
+# 获取配置实例
+settings = get_settings()
 
 app = FastAPI()
+
+# 添加 CORS 中间件 - 使用配置中的 CORS 设置
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+# 挂载静态文件目录
+STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+# 首页路由 - 返回 index.html
+@app.get("/")
+async def root():
+    return FileResponse(os.path.join(STATIC_DIR, "index.html"))
+
+# Skills 页面路由
+@app.get("/skills.html")
+async def skills():
+    return FileResponse(os.path.join(STATIC_DIR, "skills.html"))
+
 class DeepAgentForce:
     def __init__(self):
-        self.settings = Settings()
+        self.settings = get_settings()
         self.user_preference = UserPreferenceMining(self.settings)
         self.rag_engine = MilvusRAGPipeline(self.settings)
         self.history_manager = ConversationHistoryManager(self.settings.HISTORY_DIR)
@@ -33,14 +55,14 @@ class DeepAgentForce:
             if status_callback:
                 self.sessions[session_id].status_callback = status_callback
             return session_id, self.sessions[session_id]
-        
+
         import uuid
         sid = session_id or str(uuid.uuid4())
-        # 确保传入 self.settings
         self.sessions[sid] = ConversationalAgent(self.settings, status_callback)
         return sid, self.sessions[sid]
+
     def init_service(self):
-        self.settings = Settings()
+        self.settings = get_settings()
         self.user_preference = UserPreferenceMining(self.settings)
         self.rag_engine = MilvusRAGPipeline(self.settings)
         self.history_manager = ConversationHistoryManager(self.settings.HISTORY_DIR)
@@ -60,4 +82,9 @@ setup_websocket_routes(app) # 挂载 WebSocket
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(
+        app,
+        host=settings.HOST,
+        port=settings.PORT,
+        reload=settings.DEBUG
+    )
