@@ -118,7 +118,6 @@ python -m http.server 8080
 
 访问 http://localhost:8080 开始使用！
 
----
 
 ## 📸 功能展示
 
@@ -146,7 +145,6 @@ python -m http.server 8080
 🎯 生成回答        →  综合分析，生成最终回复
 ```
 
----
 
 ## 🛠️ Agent Skills 系统
 
@@ -194,7 +192,7 @@ python scripts/main.py "<参数>"
 ```
 ```
 
----
+
 
 ## 👤 动态用户画像
 
@@ -209,7 +207,7 @@ python scripts/main.py "<参数>"
   <img src="images/person_like.png" alt="用户画像" width="80%">
 </div>
 
----
+
 
 ## 📖 使用指南
 
