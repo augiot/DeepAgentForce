@@ -5,7 +5,7 @@
 </p>
 
 <p align="center">
-  <strong>新一代智能体协同系统 - 让 AI 真正成为你的智能助手</strong>
+  <strong>新一代智能体协同系统 — 让 AI 真正成为你的智能助手</strong>
   <br>
   <em>Self-Evolving AI Agent with Modular Skills & Knowledge Intelligence</em>
 </p>
@@ -13,6 +13,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Python-3.12%2B-blue?style=for-the-badge&logo=python" alt="Python 3.12+"/>
   <img src="https://img.shields.io/badge/FastAPI-0.128%2B-009688?style=for-the-badge&logo=fastapi" alt="FastAPI"/>
+  <img src="https://img.shields.io/badge/LangGraph-Latest-blueviolet?style=for-the-badge" alt="LangGraph"/>
   <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="License"/>
   <img src="https://img.shields.io/badge/Stars-Welcome-orange?style=for-the-badge" alt="Stars"/>
 </p>
@@ -23,14 +24,16 @@
 
 **DeepAgentForce** 是一款基于大语言模型的**智能体协同系统**，它不仅仅是传统的 RAG 问答系统，更是一个具有**自我进化能力**的 AI 助手平台。
 
-通过模块化的 **Agent Skills** 架构，系统支持无限扩展工具能力；通过**用户画像挖掘**技术，AI 会越用越懂你；通过**思考过程可视化**，你可以清晰看到 AI 是如何分析和解决问题的。
+- 通过模块化的 **Agent Skills** 架构，系统支持无限扩展工具能力
+- 通过**用户画像挖掘**技术，AI 会越用越懂你
+- 通过**思考过程可视化**，你可以清晰看到 AI 是如何分析和解决问题的
 
 ---
 
 ## ✨ 核心特性
 
 | 特性 | 传统 AI | DeepAgentForce |
-|:----:|:-------:|:--------------:|
+|:-----|:-------:|:--------------:|
 | 知识库问答 | ✅ | ✅ |
 | 工具自动调用 | ❌ | ✅ |
 | 模块化技能扩展 | ❌ | ✅ |
@@ -51,7 +54,6 @@
 │   │   💬    │  │   📚     │  │    👤    │  │        🛠️          │   │
 │   └────┬────┘  └────┬─────┘  └────┬─────┘  └─────────┬──────────┘   │
 └────────┼───────────┼──────────────┼──────────────────┼──────────────┘
-         │           │              │                  │
          └───────────┴──────┬───────┴──────────────────┘
                             │
                     ┌───────▼───────┐
@@ -60,19 +62,19 @@
                     │     API       │
                     └───────┬───────┘
          ┌─────────────────┼─────────────────┐
-         │                 │                   │
-    ┌────▼────┐      ┌─────▼─────┐      ┌─────▼─────┐
-    │   RAG   │      │  Persona  │      │  Skills   │
-    │ Engine  │      │  Mining   │      │  Manager  │
-    │ (Milvus)│      │ (Memory)  │      │ (Plugins) │
-    └────┬────┘      └───────────┘      └─────┬─────┘
-         │                                    │
-         └──────────────┬─────────────────────┘
+         │                 │                 │
+    ┌────▼────┐      ┌─────▼─────┐      ┌────▼─────┐
+    │   RAG   │      │  Persona  │      │  Skills  │
+    │ Engine  │      │  Mining   │      │  Manager │
+    │ (Milvus)│      │ (Memory)  │      │ (Plugins)│
+    └────┬────┘      └───────────┘      └────┬─────┘
+         └──────────────┬────────────────────┘
                         │
               ┌─────────▼─────────┐
-              │  DeepAgents Core   │
-              │  (LangGraph/LangChain)│
-              │  + Tools + Memory  │
+              │  DeepAgents Core  │
+              │  (LangGraph /     │
+              │   LangChain)      │
+              │  + Tools + Memory │
               └───────────────────┘
 ```
 
@@ -82,8 +84,8 @@
 
 ### 环境要求
 
-| 要求 | 版本 |
-|------|------|
+| 依赖 | 版本要求 |
+|------|---------|
 | Python | 3.12+ |
 | pip | 最新版 |
 
@@ -102,21 +104,23 @@ conda activate agent
 pip install -r requirements.txt
 
 # 中国用户可使用镜像加速
-pip install -r requirements.txt -i https://mirrors.aliyunyun.com/pypi/simple/ --trusted-host=mirrors.aliyunyun.com
+pip install -r requirements.txt \
+  -i https://mirrors.aliyunyun.com/pypi/simple/ \
+  --trusted-host=mirrors.aliyunyun.com
 ```
 
 ### 启动服务
 
 ```bash
-# 终端 1: 启动后端 API (默认端口 8000)
+# 终端 1：启动后端 API（默认端口 8000）
 python main.py
 
-# 终端 2: 启动前端 (任意端口)
+# 终端 2：启动前端（任意端口）
 cd static
 python -m http.server 8080
 ```
 
-访问 http://localhost:8080 开始使用！
+访问 [http://localhost:8080](http://localhost:8080) 开始使用！
 
 ---
 
@@ -125,13 +129,19 @@ python -m http.server 8080
 ### 💬 智能对话
 
 <div align="center">
-  <img src="images/chat.png" alt="智能对话界面" width="90%">
+  <img src="images/chat.png" alt="智能对话界面" width="90%"/>
 </div>
 
 ### 🛠️ 可视化 Skill 管理
 
 <div align="center">
-  <img src="images/skill.png" alt="Skill 管理界面" width="90%">
+  <img src="images/skill.png" alt="Skill 管理界面" width="90%"/>
+</div>
+
+### 📚 知识库管理
+
+<div align="center">
+  <img src="images/rag.png" alt="知识库管理界面" width="90%"/>
 </div>
 
 ### 🧠 思考过程可视化
@@ -139,7 +149,7 @@ python -m http.server 8080
 ```
 🤔 初始化          →  接收用户任务，开始分析
    ↓
-🔧 调用工具        →  识别需要调用的 Skill/工具
+🔧 调用工具        →  识别需要调用的 Skill / 工具
    ↓
 ✅ 工具执行完成     →  获取执行结果
    ↓
@@ -174,7 +184,7 @@ src/services/skills/
         └── main.py       # 执行脚本
 ```
 
-### SKILL.md 规范
+**SKILL.md 规范示例：**
 
 ```yaml
 ---
@@ -189,9 +199,9 @@ version: 1.0.0
 描述该技能适用的场景
 
 ## 执行命令
-```bash
+
 python scripts/main.py "<参数>"
-```
+
 ```
 
 ---
@@ -206,7 +216,7 @@ python scripts/main.py "<参数>"
 - 🧠 **上下文记忆** — 持续学习，越用越聪明
 
 <div align="center">
-  <img src="images/person_like.png" alt="用户画像" width="80%">
+  <img src="images/person_like.png" alt="用户画像" width="80%"/>
 </div>
 
 ---
@@ -217,12 +227,13 @@ python scripts/main.py "<参数>"
 
 首次使用需要配置 LLM：
 
-1. 访问 http://localhost:8080
+1. 访问 [http://localhost:8080](http://localhost:8080)
 2. 点击左侧 **"配置"**
 3. 填写 LLM API Key、URL、Model Name
 4. 保存配置
+
 <div align="center">
-  <img src="images/model_config.png" alt="模型配置" width="80%">
+  <img src="images/model_config.png" alt="模型配置" width="80%"/>
 </div>
 
 ### 2. 构建知识库
@@ -230,11 +241,8 @@ python scripts/main.py "<参数>"
 让 AI 学习你的私有知识：
 
 1. 进入 **"知识库"** 页面
-2. 拖拽或选择文档 (PDF/Word/TXT/Markdown)
+2. 拖拽或选择文档（PDF / Word / TXT / Markdown）
 3. 系统自动向量化并建立索引
-<div align="center">
-  <img src="rag.png" alt="模型配置" width="80%">
-</div>
 
 ### 3. 开始对话
 
@@ -249,7 +257,7 @@ python scripts/main.py "<参数>"
 
 ## 📡 API 文档
 
-后端提供完整的 RESTful API，访问 http://localhost:8000/docs 查看详细文档。
+后端提供完整的 RESTful API，启动后访问 [http://localhost:8000/docs](http://localhost:8000/docs) 查看 Swagger 交互文档。
 
 | Endpoint | 方法 | 说明 |
 |----------|:----:|------|
@@ -258,21 +266,21 @@ python scripts/main.py "<参数>"
 | `/api/rag/documents/upload` | POST | 上传文档 |
 | `/api/rag/query` | POST | 知识库问答 |
 | `/api/history/saved` | GET | 获取历史会话 |
-| `/api/skills` | GET/POST | Skills 管理 |
+| `/api/skills` | GET / POST | Skills 管理 |
 | `/api/person_like` | GET | 获取用户画像 |
 
 ---
 
 ## 🔧 配置说明
 
-配置文件位于 `data/saved_config.json`，也可以通过前端界面进行配置：
+配置文件位于 `data/saved_config.json`，也可通过前端界面进行配置：
 
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
-| `LLM_API_KEY` | 大模型 API Key | - |
-| `LLM_BASE_URL` | API 地址 | - |
-| `LLM_MODEL_NAME` | 模型名称 | - |
-| `EMBEDDING_MODEL` | Embedding 模型 | - |
+| `LLM_API_KEY` | 大模型 API Key | — |
+| `LLM_BASE_URL` | API 地址 | — |
+| `LLM_MODEL_NAME` | 模型名称 | — |
+| `EMBEDDING_MODEL` | Embedding 模型 | — |
 | `MILVUS_HOST` | 向量数据库地址 | localhost |
 | `MILVUS_PORT` | 向量数据库端口 | 19530 |
 
@@ -282,31 +290,32 @@ python scripts/main.py "<参数>"
 
 ```
 DeepAgentForce/
-├── main.py                    # 后端入口
-├── requirements.txt           # 依赖列表
-├── README.md                   # 项目文档
+├── main.py                          # 后端入口
+├── requirements.txt                 # 依赖列表
+├── README.md                        # 项目文档
 ├── config/
-│   └── settings.py            # 配置管理
+│   └── settings.py                  # 配置管理
 ├── src/
-│   ├── api/                   # API 路由
-│   │   ├── routes.py          # 主路由
-│   │   ├── websocket.py       # WebSocket 处理
-│   │   └── skills_routes.py   # Skills 路由
+│   ├── api/
+│   │   ├── routes.py                # 主路由
+│   │   ├── websocket.py             # WebSocket 处理
+│   │   └── skills_routes.py         # Skills 路由
 │   ├── services/
 │   │   ├── conversational_agent.py  # 对话 Agent
-│   │   ├── person_like_service.py    # 用户画像
-│   │   └── skills/                   # Agent Skills
+│   │   ├── person_like_service.py   # 用户画像
+│   │   └── skills/                  # Agent Skills
 │   │       ├── rag-query/
 │   │       ├── web-search/
 │   │       └── pdf-processing/
-│   └── utils/                 # 工具函数
-├── static/                    # 前端资源
-│   ├── index.html            # 主页面
-│   ├── chat.js               # 对话逻辑
-│   └── skills.js              # Skills 管理
-└── data/                     # 数据目录
-    ├── sessions/             # 会话历史
-    └── saved_config.json     # 用户配置
+│   └── utils/                       # 工具函数
+├── static/
+│   ├── index.html                   # 主页面
+│   ├── chat.js                      # 对话逻辑
+│   └── skills.js                    # Skills 管理
+├── images/                          # README 图片资源
+└── data/
+    ├── sessions/                    # 会话历史
+    └── saved_config.json            # 用户配置
 ```
 
 ---
@@ -334,26 +343,24 @@ git push origin feature/awesome-feature
 
 ## 📄 License
 
-<p align="center">
-  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="License"/>
-</p>
-
-本项目采用 **MIT License**，可自由使用、修改和分发，商用无忧！
+本项目采用 **MIT License**，可自由使用、修改和分发，商用无忧。
 
 ---
 
 ## 🙏 致谢
 
-本项目基于以下优秀的开源框架：
+本项目基于以下优秀的开源项目构建：
 
-- [LangChain/LangGraph](https://github.com/langchain-ai/langchain) - Agent 开发框架
-- [FastAPI](https://github.com/tiangolo/fastapi) - 高性能 Web 框架
-- [Milvus](https://github.com/milvus-io/milvus) - 向量数据库
+- [LangChain / LangGraph](https://github.com/langchain-ai/langchain) — Agent 开发框架
+- [FastAPI](https://github.com/tiangolo/fastapi) — 高性能 Web 框架
+- [Milvus](https://github.com/milvus-io/milvus) — 向量数据库
 
 ---
 
 <p align="center">
-  <strong>如果这个项目对你有帮助，欢迎 Star ⭐</strong>
-  <br>
-  <a href="https://github.com/TW-NLP/DeepAgentForce">🌟 Star us on GitHub</a>
+  如果这个项目对你有帮助，欢迎 Star ⭐
+  <br><br>
+  <a href="https://github.com/TW-NLP/DeepAgentForce">
+    <img src="https://img.shields.io/github/stars/TW-NLP/DeepAgentForce?style=social" alt="GitHub Stars"/>
+  </a>
 </p>
