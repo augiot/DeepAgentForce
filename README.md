@@ -34,7 +34,7 @@
 <div align="center">
   <a href="https://www.bilibili.com/video/BV1CdA7zUEk8/?vd_source=781fa589b3d6c4950e8d9db1f7a41409">
     <img src="images/logo.png" 
-         alt="▶ 点击观看演示视频" width="90%"/>
+         alt="▶ 点击观看演示视频" width="20%"/>
   </a>
   <p><em>▶ 点击图片观看完整演示视频</em></p>
 </div>
