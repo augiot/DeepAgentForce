@@ -8,11 +8,12 @@
  */
 
 // ==================== 本地默认配置 ====================
+// 注意：这些仅作为最后回退，初始化时会优先从浏览器 URL 自动获取
 const DEFAULT_CONFIG = {
-    API_HOST: '127.0.0.1',
+    API_HOST: '',  // 空字符串，初始化时自动从浏览器 URL 获取
     API_PORT: 8000,
-    FRONTEND_HOST: '127.0.0.1',
-    FRONTEND_PORT: 8080,
+    FRONTEND_HOST: '',  // 空字符串，初始化时自动从浏览器 URL 获取
+    FRONTEND_PORT: '',
 };
 
 // ==================== 全局配置对象 ====================
@@ -21,7 +22,43 @@ const CONFIG = {
     _initialized: false,
     _apiBase: null,
     _wsBase: null,
+    _frontendBase: null,
 };
+
+// ==================== 从浏览器 URL 自动检测地址 ====================
+
+/**
+ * 从浏览器 URL（window.location）自动解析前端和后端地址
+ * 部署时无需修改代码，访问 http://<部署服务器IP>:8080 即可
+ */
+function autoDetectFromBrowser() {
+    const protocol = window.location.protocol;  // 'http:' 或 'https:'
+    const hostname = window.location.hostname;  // 浏览器地址栏的 IP 或域名
+    const port = window.location.port;          // 浏览器地址栏的端口
+
+    // 前端地址：直接使用浏览器当前地址
+    CONFIG.FRONTEND_HOST = hostname;
+    CONFIG.FRONTEND_PORT = port;
+
+    // 后端地址：假设后端与前端同服务器，端口为 8000
+    CONFIG.API_HOST = hostname;
+    CONFIG.API_PORT = '8000';
+
+    // 自动构造前后端基础 URL
+    const frontendBase = port
+        ? `${protocol}//${hostname}:${port}`
+        : `${protocol}//${hostname}`;
+    const apiBase = `${protocol}//${hostname}:8000`;
+
+    CONFIG._frontendBase = frontendBase;
+    CONFIG._apiBase = apiBase;
+    CONFIG._wsBase = `${protocol.replace('http', 'ws')}//${hostname}:8000/ws/stream`;
+
+    console.log(`✅ 自动检测到部署地址: ${frontendBase}，后端: ${apiBase}`);
+}
+
+// 页面加载时立即自动检测（同步，在任何请求之前执行）
+autoDetectFromBrowser();
 
 // ==================== 配置获取函数 ====================
 
@@ -109,9 +146,9 @@ function getWsUrl() {
  */
 async function syncServerConfig() {
     try {
-        // 先用默认地址尝试获取
-        const defaultUrl = `http://${DEFAULT_CONFIG.API_HOST}:${DEFAULT_CONFIG.API_PORT}/api`;
-        const response = await fetch(`${defaultUrl}/server_info`);
+        // 使用已自动检测到的 API 地址
+        const apiBase = CONFIG._apiBase || `http://${CONFIG.API_HOST}:${CONFIG.API_PORT}`;
+        const response = await fetch(`${apiBase}/server_info`);
 
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}`);
@@ -119,24 +156,25 @@ async function syncServerConfig() {
 
         const serverInfo = await response.json();
 
-        // 更新配置
-        CONFIG.API_HOST = serverInfo.host || DEFAULT_CONFIG.API_HOST;
-        CONFIG.API_PORT = serverInfo.port || DEFAULT_CONFIG.API_PORT;
-        CONFIG._apiBase = serverInfo.api_base || `${defaultUrl}`;
-        CONFIG._wsBase = serverInfo.ws_base || `ws://${DEFAULT_CONFIG.API_HOST}:${DEFAULT_CONFIG.API_PORT}/ws/stream`;
-        CONFIG.FRONTEND_HOST = serverInfo.frontend_host || DEFAULT_CONFIG.FRONTEND_HOST;
-        CONFIG.FRONTEND_PORT = serverInfo.frontend_port || DEFAULT_CONFIG.FRONTEND_PORT;
+        // 用后端返回的覆盖（如果后端有特殊配置的话）
+        CONFIG.API_HOST = serverInfo.host || CONFIG.API_HOST;
+        CONFIG.API_PORT = serverInfo.port || CONFIG.API_PORT;
+        CONFIG._apiBase = serverInfo.api_base || apiBase;
+        CONFIG._wsBase = serverInfo.ws_base || `${apiBase.replace(/^http/, 'ws')}/ws/stream`;
+        CONFIG.FRONTEND_HOST = serverInfo.frontend_host || CONFIG.FRONTEND_HOST;
+        CONFIG.FRONTEND_PORT = serverInfo.frontend_port || CONFIG.FRONTEND_PORT;
+        CONFIG._frontendBase = serverInfo.frontend_base || CONFIG._frontendBase;
         CONFIG._initialized = true;
 
         console.log('✅ 服务器配置同步成功:', {
             api_base: CONFIG._apiBase,
             ws_base: CONFIG._wsBase,
-            frontend_base: serverInfo.frontend_base
+            frontend_base: CONFIG._frontendBase
         });
 
         return true;
     } catch (error) {
-        console.warn('⚠️ 无法获取服务器配置，使用默认配置:', error.message);
+        console.warn('⚠️ 无法获取服务器配置，使用自动检测配置:', error.message);
         return false;
     }
 }
