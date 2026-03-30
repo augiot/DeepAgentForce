@@ -402,8 +402,14 @@ DeepAgentForce/
 本项目采用 **MIT License**，可自由使用、修改和分发，商用无忧。
 
 ---
+## Contact
 
-## 🙏 致谢
+**微信：** NLP技术交流群。
+
+<img src="https://github.com/TW-NLP/ChineseErrorCorrector/blob/main/images/wechat.jpg" width="200" />
+
+
+## 致谢
 
 本项目基于以下优秀的开源项目构建：
 
