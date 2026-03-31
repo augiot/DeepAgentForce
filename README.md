@@ -27,10 +27,9 @@
 - 通过模块化的 **Agent Skills** 架构，系统支持无限扩展工具能力
 - 通过**用户画像挖掘**技术，AI 会越用越懂你
 - 通过**思考过程可视化**，你可以清晰看到 AI 是如何分析和解决问题的
- 
+- 通过**多租户架构**，支持团队协作和企业级部署
+
 ---
-
-
 
 ## ✨ 核心特性
 
@@ -46,57 +45,13 @@
 
 ---
 
-## 🔐 多租户认证系统
-
-DeepAgentForce 支持完整的多租户用户认证系统，满足团队协作和企业级部署需求。
-
-### 主要功能
-
-- **👤 用户注册与登录** - 支持用户名/邮箱注册和登录
-- **🏢 多租户架构** - 每个团队/公司拥有独立的工作空间
-- **🔑 JWT Token 认证** - 安全的无状态认证机制
-- **👥 团队协作** - 支持邀请成员加入团队
-- **🔄 Token 刷新** - 安全的 Token 自动续期机制
-
-### 技术实现
-
-| 组件 | 技术 |
-|------|------|
-| 数据库 | MySQL |
-| ORM | SQLAlchemy |
-| 密码加密 | Bcrypt |
-| 认证协议 | JWT (HS256) |
-| 后端框架 | FastAPI |
-
----
-
-## 📰 更新日志 (News)
-
-### 🆕 最新更新 (2026-03-26)
-
-- **🔐 多租户认证系统**
-  - 新增用户注册和登录页面
-  - 支持创建独立工作空间或加入已有团队
-  - JWT Token 认证，支持自动刷新
-  - 用户菜单集成，显示登录状态
-
-- **📂 输出文件浏览器**
-  - 新增右侧滑出式文件浏览器面板，方便查看 Agent 生成的文件
-  - 支持目录浏览和文件预览（.txt, .md, .py, .js, json 等文本格式）
-  - 一键下载功能，快速获取生成的内容
-
-- **API 接口扩展**
-  - `GET /api/output/files` - 获取输出目录文件列表
-  - `GET /api/output/files/preview` - 预览文本文件内容
-  - `GET /api/output/files/download` - 下载指定文件
-
----
-
 ## 🏗️ 系统架构
 
 <div align="center">
-  <img src="images/frame.png" alt="知识库管理界面" width="90%"/>
+  <img src="images/frame.png" alt="系统架构" width="90%"/>
 </div>
+
+**前后端一体化部署**：后端 FastAPI 直接托管所有静态资源（HTML / JS / CSS），无需独立前端服务器，一条命令即可启动完整服务。
 
 ---
 
@@ -126,8 +81,8 @@ pip install -r requirements.txt
 
 # 中国用户可使用镜像加速
 pip install -r requirements.txt \
-  -i https://mirrors.aliyunyun.com/pypi/simple/ \
-  --trusted-host=mirrors.aliyunyun.com
+  -i https://mirrors.aliyun.com/pypi/simple/ \
+  --trusted-host=mirrors.aliyun.com
 ```
 
 ### 数据库配置
@@ -157,15 +112,74 @@ EOF
 ### 启动服务
 
 ```bash
-# 终端 1：启动后端 API（默认端口 8000）
+# 仅需一条命令，前后端同时启动（默认端口 8000）
 python main.py
-
-# 终端 2：启动前端（任意端口）
-cd static
-python -m http.server 8080
 ```
 
-访问 [http://localhost:8080](http://localhost:8080) 开始使用！
+访问 [http://localhost:8000](http://localhost:8000) 开始使用！
+
+> **公网部署注意**：如需从外部 IP（如 `http://47.90.136.218:8000`）访问，配置 `.env` 中的 `JWT_SECRET_KEY` 并确保服务器防火墙开放 8000 端口。
+
+---
+
+## 🔐 多租户认证系统
+
+DeepAgentForce 支持完整的多租户用户认证系统，满足团队协作和企业级部署需求。
+
+### 主要功能
+
+- **👤 用户注册与登录** — 支持用户名/邮箱注册和登录
+- **🏢 多租户架构** — 每个团队/公司拥有独立的工作空间
+- **🔑 JWT Token 认证** — 安全的无状态认证机制
+- **👥 团队协作** — 支持邀请成员加入团队
+- **🔄 Token 刷新** — 安全的 Token 自动续期机制
+
+### 技术实现
+
+| 组件 | 技术 |
+|------|------|
+| 数据库 | MySQL |
+| ORM | SQLAlchemy |
+| 密码加密 | Bcrypt |
+| 认证协议 | JWT (HS256) |
+| 后端框架 | FastAPI |
+
+---
+
+## 📰 更新日志 (News)
+
+### 🆕 最新更新 (2026-03-31)
+
+- **🔧 前后端一体化部署**
+  - FastAPI 直接托管所有静态资源（HTML / JS / CSS），删除独立前端服务器依赖
+  - 添加 `/index.html` `/login.html` `/register.html` 等页面路由
+  - 所有静态资源引用统一使用 `/static/` 绝对路径
+
+- **🐛 API 路径修复**
+  - 修复 `LLM_URL` 配置含 `/chat/completions` 后缀时路径重复的问题（`/chat/completions/chat/completions` → 正确）
+  - 同样修复 `EMBEDDING_URL` 的 `/embeddings` 后缀问题
+  - 新增 `LLM_BASE_URL` / `EMBEDDING_BASE_URL` 内部属性，自动剥离路径后缀
+
+- **🌐 跨域请求修复**
+  - 修复前端配置同步逻辑，防止后端返回的内网 IP 覆盖浏览器检测到的公网地址
+
+### 2026-03-26
+
+- **🔐 多租户认证系统**
+  - 新增用户注册和登录页面
+  - 支持创建独立工作空间或加入已有团队
+  - JWT Token 认证，支持自动刷新
+  - 用户菜单集成，显示登录状态
+
+- **📂 输出文件浏览器**
+  - 新增右侧滑出式文件浏览器面板，方便查看 Agent 生成的文件
+  - 支持目录浏览和文件预览（.txt, .md, .py, .js, json 等文本格式）
+  - 一键下载功能，快速获取生成的内容
+
+- **API 接口扩展**
+  - `GET /api/output/files` — 获取输出目录文件列表
+  - `GET /api/output/files/preview` — 预览文本文件内容
+  - `GET /api/output/files/download` — 下载指定文件
 
 ---
 
@@ -268,20 +282,27 @@ python scripts/main.py "<参数>"
 
 ## 📖 使用指南
 
-### 1. 模型配置
+### 1. 注册 / 登录
 
-首次使用需要配置 LLM：
+首次使用访问 [http://localhost:8000](http://localhost:8000)，完成注册并创建工作空间（或直接加入已有团队）。
 
-1. 访问 [http://localhost:8080](http://localhost:8080)
-2. 点击左侧 **"配置"**
-3. 填写 LLM API Key、URL、Model Name
-4. 保存配置
+### 2. 模型配置
+
+进入左侧 **"配置"** 页面，填写以下信息：
+
+| 配置项 | 说明 | 示例 |
+|--------|------|------|
+| `LLM_URL` | 模型 API 地址（支持 OpenAI / OpenRouter 等兼容接口） | `https://openrouter.ai/api/v1` |
+| `LLM_API_KEY` | 模型 API Key | `sk-or-...` |
+| `LLM_MODEL` | 模型名称 | `anthropic/claude-3.5-sonnet` |
+
+> **注意**：`LLM_URL` 填入 API 的 base 地址即可（不含 `/chat/completions` 后缀），系统会自动处理。
 
 <div align="center">
   <img src="images/model_config.png" alt="模型配置" width="80%"/>
 </div>
 
-### 2. 构建知识库
+### 3. 构建知识库（可选）
 
 让 AI 学习你的私有知识：
 
@@ -289,7 +310,7 @@ python scripts/main.py "<参数>"
 2. 拖拽或选择文档（PDF / Word / TXT / Markdown）
 3. 系统自动向量化并建立索引
 
-### 3. 开始对话
+### 4. 开始对话
 
 直接在对话框中提问，AI 会自动：
 
@@ -340,12 +361,14 @@ python scripts/main.py "<参数>"
 
 | 配置项 | 说明 | 默认值 |
 |--------|------|--------|
+| `LLM_URL` | 模型 API 地址（base URL） | — |
 | `LLM_API_KEY` | 大模型 API Key | — |
-| `LLM_BASE_URL` | API 地址 | — |
-| `LLM_MODEL_NAME` | 模型名称 | — |
+| `LLM_MODEL` | 模型名称 | — |
+| `EMBEDDING_URL` | Embedding API 地址 | — |
+| `EMBEDDING_API_KEY` | Embedding API Key | — |
 | `EMBEDDING_MODEL` | Embedding 模型 | — |
-| `MILVUS_HOST` | 向量数据库地址 | localhost |
-| `MILVUS_PORT` | 向量数据库端口 | 19530 |
+
+> **URL 填写说明**：在模型配置页面填入 API 的 base 地址（如 `https://openrouter.ai/api/v1`），系统内部会自动拼接正确的接口路径，无需手动添加 `/chat/completions` 或 `/embeddings` 后缀。
 
 ---
 
@@ -353,7 +376,7 @@ python scripts/main.py "<参数>"
 
 ```
 DeepAgentForce/
-├── main.py                          # 后端入口
+├── main.py                          # 后端入口（同时托管前端静态资源）
 ├── requirements.txt                 # 依赖列表
 ├── README.md                        # 项目文档
 ├── .env                             # 环境变量配置
@@ -373,6 +396,7 @@ DeepAgentForce/
 │   │   └── user.py                  # 用户和租户模型
 │   ├── services/
 │   │   ├── conversational_agent.py  # 对话 Agent
+│   │   ├── rag.py                   # 知识库 / RAG
 │   │   ├── person_like_service.py   # 用户画像
 │   │   ├── auth_service.py          # 认证服务
 │   │   └── skills/                  # Agent Skills
@@ -384,8 +408,11 @@ DeepAgentForce/
 │   ├── index.html                   # 主页面
 │   ├── login.html                   # 登录页面
 │   ├── register.html                # 注册页面
+│   ├── skills.html                  # Skills 管理页面
 │   ├── chat.js                      # 对话逻辑
 │   ├── auth.js                      # 认证管理
+│   ├── config.js                    # 配置管理
+│   ├── knowledge.js                 # 知识库管理
 │   ├── output.js                    # 输出文件管理
 │   └── skills.js                    # Skills 管理
 ├── images/                          # README 图片资源
@@ -396,18 +423,19 @@ DeepAgentForce/
 
 ---
 
-
 ## 📄 License
 
 本项目采用 **MIT License**，可自由使用、修改和分发，商用无忧。
 
 ---
+
 ## Contact
 
 **微信：** NLP技术交流群。
 
 <img src="https://github.com/TW-NLP/ChineseErrorCorrector/blob/main/images/wechat.jpg" width="200" />
 
+---
 
 ## 致谢
 
