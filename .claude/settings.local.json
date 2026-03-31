@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python learn-docs/update_learn_docs.py summary)"
+    ]
+  }
+}
