@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker run:*)",
+      "Bash(uv venv:*)",
+      "Bash(uv pip:*)",
+      "Bash(source .venv/bin/activate)",
+      "Bash(python -c \"import fastapi, pymysql, pydantic; print\\(''✅ 核心依赖检查通过''\\)\")",
+      "Bash(docker ps:*)",
+      "Bash(python -c \":*)",
+      "Bash(python main.py)",
+      "Bash(curl -s http://localhost:8000/api/health)",
+      "Bash(curl -s http://127.0.0.1:8000/)",
+      "Bash(kill -9 99259)"
+    ]
+  }
+}
